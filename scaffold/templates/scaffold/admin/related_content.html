@@ -1,0 +1,60 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+     <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo;
+     <a href="{%url sections:node_index%}">{% trans "Sections" %}</a> &rsaquo;
+     Content For {{node.type}} <em>{{node.title}}</em>
+</div>
+{% endblock %}
+{% block content %}
+<script src="{{MEDIA_URL}}js/jquery.js" type="text/javascript"></script>
+<script src="{{MEDIA_URL}}js/jquery.treeview.js" type="text/javascript"></script>
+<style type="text/css">
+th { font-weight: normal; }
+th.active  { font-weight: bold; text-decoration: underline; }
+</style>
+<br/>
+<p>Click a column to sort</p>
+<table>
+<thead>
+    <tr>
+        <th{%ifequal sort "name"%} class="active"{%endifequal%}><a href="?sort=name">Title</a></th>
+        <th{%ifequal sort "date"%} class="active"{%endifequal%}><a href="?sort=date">Date</a></th>
+        <th{%ifequal sort "content"%} class="active"{%endifequal%} colspan="2"><a href="?sort=content">Content Type</a></th>
+        
+    </tr>
+</thead>
+<tbody>
+{%for item, date, app, obj, relationship_type, edit_url in related_content.object_list%}
+    <tr>
+        <td><a href="{{item.get_absolute_url}}">
+            {%if item.title%}{{item.title}}{%else%}{%if item.headline%}{{item.headline}}{%else%}{{item}}{%endif%}{%endif%}
+        </a></td>
+        <td>{%if date%}{{date|date:'D, F j, Y'}}{%endif%}</td>
+        <td>{{obj}}</td>
+        <td><a href="{{edit_url}}">Edit {{obj}}</a></td>
+    </tr>
+{%empty%}
+    <tr><td colspan="2">No objects assigned to the section.</td></tr>
+{%endfor%}
+</tbody>
+</table>
+{%ifnotequal related_content.paginator.num_pages 1%}
+<div class="pagination">
+    <span class="step-links">
+        {% if related_content.has_previous %}
+            <a href="?page={{ related_content.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ related_content.number }} of {{ related_content.paginator.num_pages }}.
+        </span>
+
+        {% if related_content.has_next %}
+            <a href="?page={{ related_content.next_page_number }}">next</a>
+        {% endif %}
+    </span>
+</div>
+{%endifnotequal%}
+{% endblock %}

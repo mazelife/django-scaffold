@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{%block description%}{{node.meta_description}}{%endblock%}
+{%block keywords%}{{node.meta_keywords}}{%endblock%}
+{%block title%}{{node.title}} &mdash; The National Academies{% endblock %}
+{%block header%}
+    {%if node.background_image%}
+    <style type="text/css">
+    .main {background:transparent url({{node.background_image.url}}) no-repeat scroll 0 0; }
+    </style>
+    {%endif%}
+{%endblock%}
+{%block bodyclass%}{{node.slug}}{%endblock%}
+
+{%block content%} 
+<div id="intro">
+    {%ifequal node.depth 2%}
+        {%with node.get_parent as super%}
+        <h1><a href="{{super.get_absolute_url}}">{{super.title}}</a></h1>
+        {%endwith%}
+    {%endifequal%}
+    <h2>{{node.title}}</h2> {{node.description|safe}} 
+</div>
+<span class="shadow-top"></span> 
+<div id="landing"><!-- landing content -->
+    <!-- MAIN LANDING ITEMS -->
+    {%for child in node.get_all_children%} 
+    <div class="teaser">
+    {%ifequal child.content_type 'subsection'%}
+    {%with child as subsection%}
+        <h3 class="col" {%if subsection.teaser_icon%}style="background-image:url({{subsection.teaser_icon.url}})"{%endif%}>
+            <a href="{{subsection.get_absolute_url}}">{{subsection.title}}</a></h3>
+            <img src="{{subsection.teaser_icon.url}}" class="print" alt="" /> 
+        <div class="col">
+            <h4>{{subsection.teaser|safe}}</h4> 
+            <p>{{subsection.sub_teaser|safe}}</p>
+            <p class="button">
+                <a href="{{subsection.get_absolute_url}}">More about {{subsection.title|lower}}</a>
+            </p>
+        </div>
+        {%if subsection.article_set.published%} 
+        <ul>
+            {%for article in subsection.article_set.published%} 
+            <li>
+                <a href="{{article.get_absolute_url}}">{{article.headline}}</a>
+            </li>
+            {%endfor%} 
+        </ul>
+        {%endif%}
+    {%endwith%}
+    {%endifequal%}
+    {%ifequal child.content_type 'article'%}
+    {%with child as article%}
+        <h3 class="col" style="background-image:url({{article.teaser_icon.url}})">
+            <a href="{{article.get_absolute_url}}">{{article.headline}}</a>
+        </h3>
+        <img src="{{article.teaser_icon.url}}" width="{{article.teaser_icon.width}}" height="{{article.teaser_icon.height}}" class="print" alt="" /> 
+        <div class="col">
+            <h4>{{article.teaser|safe}}</h4> {{article.sub_teaser|safe}} 
+            <p class="button">
+                <a href="{{article.get_absolute_url}}">More about {{article.headline|lower}}</a>
+            </p>
+        </div>
+        {%endwith%} {%endifequal%} 
+    </div>
+    {%endfor%}
+    <span class="shadow-bottom"></span>
+</div>
+{%endblock%}
+{%block sidebar%}
+    {%include 'sidebars/hands_on.html'%}
+    {%include 'sidebars/quiz.html'%}
+    {%with node.get_press_items as press_items%}{%if press_items%}
+    <div class="press">
+        <h3>National Academies Press</h3>
+        <p class="press-header">Search the National Academies Press website by selecting one of these related terms.</p>
+        {{press_items|safe}}
+    </div>
+    {%endif%}{%endwith%}
+{%endblock%}

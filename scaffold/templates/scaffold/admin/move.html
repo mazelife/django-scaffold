@@ -1,0 +1,32 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+     <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo;
+    <a href="{%url sections:node_index%}">{% trans "Sections" %}</a> &rsaquo;
+     Move {{node.type}} <em>{{node.title}}</em>
+</div>
+{% endblock %}
+{% block content %}
+<style type="text/css">
+label, input { display: inline; }
+</style>
+
+<form action="{%url sections:move node_id=node.pk%}" method="POST">
+<label>Make this node a 
+    <select name="relationship">
+        <option value="neighbor">Neighbor</option>
+        <option value="child">Child</option>
+    </select>
+<label>
+<label> of 
+    <select name="to">
+        {%for n in tree%}
+        <option value="{{n.id}}">{{n}}</option>
+        {%endfor%}
+        <option value="TOP">[MOVE TO TOP]</option>
+    </select>
+</label>   
+<input type="submit" value="Move" />
+</form>
+{%endblock%}
