@@ -2,7 +2,7 @@ from django.conf import settings
 
 _project_settings_registry = []
 
-def get_setting(project_setting_name, default=None, required=False):
+def _get_setting(project_setting_name, default=None, required=False):
     _project_settings_registry.insert(0, project_setting_name)
     if required and not default:
             assert hasattr(settings, project_setting_name), (
@@ -12,16 +12,24 @@ def get_setting(project_setting_name, default=None, required=False):
     return getattr(settings, project_setting_name, default)
     
 
-EXTENDING_APP_NAME = get_setting('SECTIONS_EXTENDING_APP_NAME', 
+EXTENDING_APP_NAME = _get_setting('SCAFFOLD_EXTENDING_APP_NAME', 
     required=True
 )
 
-EXTENDING_MODEL_PATH = get_setting('SECTIONS_EXTENDING_MODEL_NAME',     
+EXTENDING_MODEL_PATH = _get_setting('SCAFFOLD_EXTENDING_MODEL_PATH',     
     default = "%s.models.Section" % EXTENDING_APP_NAME
 )
 
+EXTENDING_VIEW_PATH = _get_setting('SCAFFOLD_EXTENDING_VIEW_PATH',     
+    default = "%s.views" % EXTENDING_APP_NAME
+)
 
-LINK_HTML = get_setting('SECTIONS_LINK_HTML', default={
+EXTENDING_ADMIN_VIEW_PATH = _get_setting('SCAFFOLD_EXTENDING_ADMIN_VIEW_PATH',     
+    default = "%s.admin_views" % EXTENDING_APP_NAME
+)
+
+
+LINK_HTML = _get_setting('SCAFFOLD_LINK_HTML', default={
     'add_link': (
         "<a class=\"addlink\" href=\"add-to/%s/\">"
         "add child</a>"
@@ -40,7 +48,7 @@ LINK_HTML = get_setting('SECTIONS_LINK_HTML', default={
     )         
 })
 
-def get_live_model():
+def get_extending_model():
     """
     This method returns the model that subclasses BaseSection.
     Since it's that real, non-abstract model we usually want to

@@ -3,8 +3,11 @@
 {% block breadcrumbs %}
 <div class="breadcrumbs">
      <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo;
-     <a href="{%url sections:node_index%}">{% trans "Sections" %}</a> &rsaquo;
-     Add {%if not node%}Section{%else%}Subsection{%endif%} {{node.title}}
+  <a href="{%url sections:sections_index%}">{% trans "Sections" %}</a> &rsaquo; 
+     Add 
+     {%if not node%}
+     {% trans "Section: " %}{%else%}{% trans "Subsection: " %}
+     {%endif%}{{node.title}}
 </div>
 {% endblock %}
 {% block content %}

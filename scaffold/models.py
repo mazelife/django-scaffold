@@ -8,13 +8,16 @@ from django.utils.translation import ugettext_lazy as _
 
 from treebeard.mp_tree import MP_Node
 
-class Section(MP_Node):
+class BaseSection(MP_Node):
     """
     An abstract model of a section or subsection. This class provides a base
     level of functionality that should serve as scaffold for a custom section
     object.
     """
-    slug = models.SlugField(_("Slug"), help_text=_("Used to construct URL"))
+    slug = models.SlugField(_("Slug"), 
+        help_text=_("Used to construct URL"),
+        primary_key = True
+    )
     title =  models.CharField(_("Title"), max_length=255)
     order = models.IntegerField(_("Order of section"), blank=True, default=0)
     
@@ -98,33 +101,33 @@ class Section(MP_Node):
             sort_fields = set()
         for rel in self._meta.get_all_related_objects():
             for fk_item in getattr(self, rel.get_accessor_name()).all():
-            # If this is a generic relation, fetch content object:
-            if hasattr(fk_item, 'content_object'):
-                fk_item = fk_item.content_object    
-                relationship_type = 'generic-foreign-key'
-            else:
-                relationship_type = 'foreign-key'
-            # In the weird edge-case where an item is related to a Section
-            # Node in more than one way, we only want the item to appear in
-            # this list once. Therefore, we ID items by app, model and pk 
-            # and verify we haven't already seen that ID before adding the 
-            # item to our list:
-            object_id = "%s/%s/%s" % (
-                fk_item._meta.app_label,
-                fk_item._meta.object_name,
-                str(fk_item.pk)
-            )
-            if object_id not in object_ids:
-                object_ids.insert(0, object_id)
-                processed_associations.insert(0, assoc_id)
-                associated_content.insert(0,(
-                    fk_item, 
+                # If this is a generic relation, fetch content object:
+                if hasattr(fk_item, 'content_object'):
+                    fk_item = fk_item.content_object    
+                    relationship_type = 'generic-foreign-key'
+                else:
+                    relationship_type = 'foreign-key'
+                # In the weird edge-case where an item is related to a Section
+                # Node in more than one way, we only want the item to appear in
+                # this list once. Therefore, we ID items by app, model and pk 
+                # and verify we haven't already seen that ID before adding the 
+                # item to our list:
+                object_id = "%s/%s/%s" % (
                     fk_item._meta.app_label,
                     fk_item._meta.object_name,
-                    relationship_type                    
-                ))
-                if infer_sort and len(fk_item._meta.ordering) > 0:
-                    sort_fields.add(fk_item._meta.ordering[0])
+                    str(fk_item.pk)
+                )
+                if object_id not in object_ids:
+                    object_ids.insert(0, object_id)
+                    processed_associations.insert(0, assoc_id)
+                    associated_content.insert(0,(
+                        fk_item, 
+                        fk_item._meta.app_label,
+                        fk_item._meta.object_name,
+                        relationship_type                    
+                    ))
+                    if infer_sort and len(fk_item._meta.ordering) > 0:
+                        sort_fields.add(fk_item._meta.ordering[0])
         if not len(sort_fields) == 0:
             for item, app, model, rel in associated_content:
                 for sort_field in sort_fields:
@@ -151,7 +154,7 @@ class Section(MP_Node):
         """
         return self.get_children().select_related()
         
-    def get_associated_content(only=[], sort_key=None):
+    def get_associated_content(self, only=[], sort_key=None):
         """
         This method returns an aggregation of all content that's associated 
         with a section, including subsections, and other objects related via 
@@ -197,6 +200,9 @@ class SectionItem(models.Model):
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey()
     
+    class Meta:
+        abstract = True
+            
     def __unicode__(self):
         fk_app = self.content_object._meta.app_label
         fk_model = self.content_object.__class__.__name__

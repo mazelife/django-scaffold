@@ -3,8 +3,8 @@
 {% block breadcrumbs %}
 <div class="breadcrumbs">
      <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo;
-     <a href="{%url sections:node_index%}">{% trans "Sections" %}</a> &rsaquo;
-     Content For {{node.type}} <em>{{node.title}}</em>
+     <a href="{%url sections:sections_index%}">{% trans "Sections" %}</a>&rsaquo;      
+     {% trans "Content For"%} {{node.type}} <em>{{node.title}}</em>
 </div>
 {% endblock %}
 {% block content %}

@@ -3,8 +3,8 @@
 <title>Remove {{node.type}} "{{node.title}}"</title>
 {% block breadcrumbs %}
 <div class="breadcrumbs">
-     <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo;
-     <a href="{%url sections:node_index%}">{% trans "Sections" %}</a> &rsaquo;
+    <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo;
+    <a href="{%url sections:sections_index%}">{% trans "Sections" %}</a> &rsaquo; 
      {% trans 'Delete'%} {{node.type}} <em>{{node.title}}</em>
 </div>
 {% endblock %}
