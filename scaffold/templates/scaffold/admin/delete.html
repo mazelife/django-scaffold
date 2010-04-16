@@ -1,40 +1,39 @@
 {% extends "admin/delete_confirmation.html" %}
 {% load i18n %}
-<title>Remove {{node.type}} "{{node.title}}"</title>
+<title>Remove {{section.type}} "{{section.title}}"</title>
 {% block breadcrumbs %}
 <div class="breadcrumbs">
     <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo;
     <a href="{%url sections:sections_index%}">{% trans "Sections" %}</a> &rsaquo; 
-     {% trans 'Delete'%} {{node.type}} <em>{{node.title}}</em>
+     {% trans 'Delete'%} {{section.type}} <em>{{section.title}}</em>
 </div>
 {% endblock %}
 {% block content %}
 {% if perms_lacking %}
-    <p>{% blocktrans with node as escaped_node %}Deleting the {{escaped_node.type}} '{{escaped_node.title}}' would result in deleting related objects, but your account doesn't have permission to do so.{% endblocktrans %}</p>
+    <p>{% blocktrans with section as escaped_section %}Deleting the {{escaped_section.type}} '{{escaped_section.title}}' would result in deleting related objects, but your account doesn't have permission to do so.{% endblocktrans %}</p>
 {% else %}
 <style type="text/css">
 .errornote {
     margin-bottom: 10px; 
     width: 330px;
-
 }
 </style>
 <h2>Are you sure?</h2>
 <p>Are you sure you want to delete the 
-{{node.type}} <strong>{{node.title}}</strong>?</p>
-{%if not node.is_leaf%}
-{%with node.get_descendants as descendants%} 
+{{section.type}} <strong>{{section.title}}</strong>?</p>
+{%if not section.is_leaf%}
+{%with section.get_descendants as descendants%} 
 <div class="errornote">
-<p><strong>Warning!</strong> This {{node.type}} 
+<p><strong>Warning!</strong> This {{section.type}} 
 contains {{descendants|length}} other subsection{{descendants|length|pluralize}}:
 <ul>{%for subsection in descendants%}
     <li>{{subsection.title}}</li>
 {%endfor%}</ul>
-If you delete this {{node.type}}, {{descendants|length|pluralize:"it,they"}} will be deleted as well!</p>
+If you delete this {{section.type}}, the {{descendants|length|pluralize:"other,others"}} will be deleted as well!</p>
 </div>
 {%endwith%}
 {%endif%}
-<form action="{%url sections:delete node_id=node.pk%}" method="POST">
+<form action="{%url sections:delete section_id=section.pk%}" method="POST">
 <input type="submit" value="Yes, I'm sure" />
 </form>
 {% endif %}

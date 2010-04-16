@@ -4,7 +4,7 @@
 <div class="breadcrumbs">
      <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo;
      <a href="{%url sections:sections_index%}">{% trans "Sections" %}</a>&rsaquo;      
-     {%trans "Content For"%} {{node.type}} <em>{{node.title}}</em>
+     {%trans "Content For"%} {{section.type}} <em>{{section.title}}</em>
 </div>
 {% endblock %}
 {% block content %}
@@ -14,7 +14,7 @@ th { font-weight: normal; }
 th.active  { font-weight: bold; text-decoration: underline; }
 </style>
 <br/>
-<form action="{%url sections:order node_id=node.pk%}" method="POST">
+<form action="{%url sections:order section_id=section.pk%}" method="POST">
     <table>
     <thead>
         <tr>
@@ -27,9 +27,13 @@ th.active  { font-weight: bold; text-decoration: underline; }
     <tbody>
     {%for item, date, app, obj, relationship_type, order in related_content%}
         <tr>
-            <td><a href="{{item.get_absolute_url}}">
+            <td>
+                {%if item.get_absolute_url%}
+                <a href="{{item.get_absolute_url}}">
+                {%endif%}
                 {%if item.title%}{{item.title}}{%else%}{%if item.headline%}{{item.headline}}{%else%}{{item}}{%endif%}{%endif%}
-            </a></td>
+                {%if item.get_absolute_url%}</a>{%endif%}
+            </td>
             <td>{%if date%}{{date|date:'D, F j, Y'}}{%endif%}</td>
             <td>{{obj}}</td>
             <td><input type="text" name="{{app}}-{{obj}}-{{item.pk}}" value="{{item.order}}"></td>

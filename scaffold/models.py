@@ -14,10 +14,7 @@ class BaseSection(MP_Node):
     level of functionality that should serve as scaffold for a custom section
     object.
     """
-    slug = models.SlugField(_("Slug"), 
-        help_text=_("Used to construct URL"),
-        primary_key = True
-    )
+    slug = models.SlugField(_("Slug"), help_text=_("Used to construct URL"))
     title =  models.CharField(_("Title"), max_length=255)
     order = models.IntegerField(_("Order of section"), blank=True, default=0)
     

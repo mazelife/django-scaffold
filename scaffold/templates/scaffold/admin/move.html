@@ -4,7 +4,7 @@
 <div class="breadcrumbs">
      <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo;
      <a href="{%url sections:sections_index%}">{% trans "Sections" %}</a>&rsaquo;      
-     {%trans "Move"%} {{node.type}} <em>{{node.title}}</em>
+     {%trans "Move"%} {{section.type}} <em>{{section.title}}</em>
 </div>
 {% endblock %}
 {% block content %}
@@ -12,8 +12,8 @@
 label, input { display: inline; }
 </style>
 
-<form action="{%url sections:move node_id=node.pk%}" method="POST">
-<label>Make this node a 
+<form action="{%url sections:move section_id=section.pk%}" method="POST">
+<label>Make this section a 
     <select name="relationship">
         <option value="neighbor">Neighbor</option>
         <option value="child">Child</option>

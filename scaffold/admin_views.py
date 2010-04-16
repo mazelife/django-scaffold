@@ -3,13 +3,15 @@ from functools import partial
 
 from django.contrib.auth.decorators import permission_required
 from django.contrib.admin import site
+from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
 from django.db import transaction
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponseServerError
+from django.http import HttpResponse, HttpResponseBadRequest, \
+    HttpResponseServerError
 from django.shortcuts import get_object_or_404
 from django.views.generic import simple
-from django.http import Http404
 
+from forms import SectionForm
 import settings as app_settings
 
 app_name =  app_settings.EXTENDING_APP_NAME
@@ -95,19 +97,18 @@ def add_to(request, section_id):
     if request.method == 'POST':
         section_form = SectionForm(request.POST, request.FILES)
         if section_form.is_valid():
-            sec_kwargs = {}
-            for field in section_form._meta.fields:
-                sec_kwargs[field] = getattr(section_form.cleaned_data, field)
+            section_kwargs = {}
+            for field in section_form.fields.keys():
+                section_kwargs[field] = section_form.cleaned_data[field]
             if parent:
                 section = parent.add_child(**section_kwargs)
             else:
-                section = Section.add_root(**section_kwargs)
-            source_formset = SourceFormSet(request.POST, instance=section)
-            if source_formset.is_valid():
-                source_formset.save()              
+                section = Section.add_root(**section_kwargs)         
             # Now position node if necessary:
             if request.POST.get('position') and request.POST.get('child'):
-                node = Section.objects.get(slug=form.cleaned_data['slug'])
+                node = Section.objects.get(
+                    slug=section_form.cleaned_data['slug']
+                )
                 rel_to = get_object_or_404(Section, 
                     pk=request.POST.get('child')
                 )
@@ -133,33 +134,231 @@ def add_to(request, section_id):
             else: 
                 transaction.commit()
             return simple.redirect_to(request,
-                url=reverse("sections:node_index"), 
+                url=reverse("sections:sections_index"), 
                 permanent=False
             )
     else:
         section_form = SectionForm()
-        source_formset = SourceFormSet()
     return simple.direct_to_template(request, 
-        template = "sections/admin/add.html",
+        template = "scaffold/admin/add.html",
         extra_context = {
             'node': parent,
             'section_form': section_form,
-            'source_formset': source_formset,
             'title': "New %s" % (parent and "subsection" or "section")
         }
     )
 
-def delete(request):
-    pass
+@site.admin_view
+@permission_required('%s.delete_section' % app_name)
+def delete(request, section_id):
+    """
+    This view allows the user to delete Sections within the node tree.
+    """
+    section = get_object_or_404(Section, pk=section_id)
+    if request.method == 'POST':
+        section.delete()
+        return simple.redirect_to(request,
+            url=reverse("sections:sections_index"), 
+            permanent=False
+        )        
+    return simple.direct_to_template(request, 
+        template = "scaffold/admin/delete.html",
+        extra_context = {
+            'section': section, 
+            'title': "Delete %s '%s'" % (section.type, section.title)
+        }
+    )
 
-def edit(request):
-    pass
+@site.admin_view
+@permission_required('%s.change_section' % app_name)
+def edit(request, section_id):
+    """
+    This view allows the user to edit Sections within the tree.
+    """
+    section = get_object_or_404(Section, pk=section_id)
+    if request.method == 'POST':
+        section_form = SectionForm(request.POST, request.FILES,
+            instance=section
+        )
+        if section_form.is_valid():
+            section = section_form.save()
+            return simple.redirect_to(request,
+                url=reverse("sections:sections_index"), 
+                permanent=False
+            )         
+    else:
+        section_form = SectionForm(instance=section)           
+    return simple.direct_to_template(request, 
+        template = "scaffold/admin/edit.html",
+        extra_context = {
+            'section': section, 
+            'form': section_form,
+            'title': "Edit %s '%s'" % (section.type, section.title),
+            'fk_related_items': section.get_associated_content()
+        }
+    )
+
+@transaction.commit_manually
+@permission_required('%s.change_section' % app_name)
+def move(request, section_id):
+    """
+    This view allows a user to move a Section within the node tree.
+    """
+    section = Section.objects.get(pk=section_id)
+    if request.method == 'POST':
+        rel = request.POST.get('relationship')
+        if request.POST.get('to') == 'TOP':
+            rel_to = Section.get_root_nodes()[0]
+            rel = 'top'
+        else:    
+            rel_to = get_object_or_404(Section, pk=request.POST.get('to'))
+        if rel_to.pk == section.pk:
+            return HttpResponseBadRequest(
+            "Unable to move node relative to itself."
+            )
+        pos_map = {
+            'top': 'left',
+            'neighbor': 'right',
+            'child': 'first-child'
+        }
+        if rel not in pos_map.keys():
+            return HttpResponseBadRequest(
+                "Position must be one of %s " % ", ".join(pos_map.keys())
+            )
+        try:
+            section.move(rel_to, pos_map[rel])
+        except Exception, e:
+            transaction.rollback()
+            return HttpResponseServerError("Unable to move node. %s" % e)
+        else:
+            if Section.find_problems()[4] != []:
+                Section.fix_tree()
+            transaction.commit()
+            return simple.redirect_to(request,
+                url=reverse("sections:sections_index"), 
+                permanent=False
+            )
+    other_secs = Section.objects.exclude(pk=section_id)
+    # Exclude descendants of the node being moved:
+    other_secs = [n for n in other_secs if not n.is_descendant_of(section)]
+    return simple.direct_to_template(request, 
+        template = "scaffold/admin/move.html",
+        extra_context = {
+            'section': section,
+            'tree': other_secs,
+            'title': "Move %s '%s'" % (section.type, section.title)
+        }
+    )
+
 
 def order_all_content(request):
     pass
 
-def related_content(request):
-    pass
-    
-def move(request):
-    pass
+@site.admin_view
+@permission_required('%s.can_view_associated_content' % app_name)
+def related_content(request, section_id, list_per_page=10):
+    """
+    This view shows all content associated with a particular section. The edit 
+    view also shows this info, but this view is for people who may not have 
+    permissions to edit sections but still need to see all content associated
+    with a particular Section.
+    """
+    section = get_object_or_404(Section, id=section_id)
+    related_content = section.get_related_content()
+    content_table = []
+    for item, app, model, relationship_type in related_content:
+        edit_url = "admin:%s_%s_change" % (app, model.lower())
+        edit_url = reverse(edit_url, args=[item.id])
+        if item._meta.get_latest_by:
+            date = getattr(item, item._meta.get_latest_by)
+        else:
+            date = None
+        content_table.append((
+            item, 
+            date, 
+            app, 
+            model, 
+            relationship_type, edit_url
+        ))
+    sort = request.GET.get('sort')
+    sort_map = {
+        'name': 0,
+        'date': 1,
+        'content': 3
+    }
+    if sort and sort in sort_map.keys():
+        content_table = sorted(
+            content_table, 
+            key=operator.itemgetter(sort_map[sort])
+        )
+    paginated_content = Paginator(content_table, list_per_page)
+    try:
+        page = int(request.GET.get('page', '1'))
+    except ValueError:
+        page = 1
+    # If page request is out of range, deliver last page of results:
+    try:
+        content_table = paginated_content.page(page)
+    except (EmptyPage, InvalidPage):
+        content_table = paginated_content.page(paginated_content.num_pages)
+    return simple.direct_to_template(request, 
+        template = "scaffold/admin/related_content.html",
+        extra_context = {
+            'section': section,
+            'sort': sort,
+            'related_content': content_table,
+            'title': "'%s' %s Related Content" % (section.title, section.type),
+        }
+    )
+
+@site.admin_view
+@permission_required('%s.change_section' % app_name)
+def order_all_content(request, section_id):
+    """
+    This view shows all content associated with a particular section including
+    subsections, but unlike related_content, this view allows users to set the
+    order of a particular section.
+    """    
+    section = get_object_or_404(Section, id=section_id)
+    all_children = section.get_associated_content(sort_key='order')
+    content_table = []
+    for item in all_children:
+        app = item._meta.app_label
+        model = item._meta.object_name 
+        if item._meta.get_latest_by:
+            date = getattr(item, item._meta.get_latest_by)
+        else:
+            date = None
+        content_table.append((item, date, app, model, item.order))
+    if request.method == 'POST':
+        resorted_content = []
+        for item, date, app, model, current_order in content_table:
+            item_id = "%s-%s-%s" % (app, model, str(item.pk))
+            item_order = request.POST.get(item_id, None)
+            if item_order and item_order.isdigit():
+                current_order = int(item_order)
+                item.order = current_order
+                item.save()
+            else:
+                return HttpResponseBadRequest((
+                    "Item order was not specified for every item, or the "
+                    "order provided was not a number."
+                ))
+            resorted_content.append((item, date, app, model, item.order))
+        content_table = resorted_content
+        return simple.redirect_to(request,
+            url=reverse("sections:sections_index"), 
+            permanent=False
+        )        
+    content_table = sorted(
+        content_table, 
+        key=operator.itemgetter(4)
+    )
+    return simple.direct_to_template(request, 
+        template = "scaffold/admin/order_all_content.html",
+        extra_context = {
+            'section': section,
+            'related_content': content_table,
+            'title': "'%s' %s Related Content" % (section.title, section.type),
+        }
+    )    

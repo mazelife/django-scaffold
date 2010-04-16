@@ -10,7 +10,7 @@ urlpatterns = patterns(app_settings .EXTENDING_VIEW_PATH,
     url(r'^$', 'index', 
         name="sections_index"
     ),
-    url(r'^add-to/(?P<section_id>\w+)/?$', 'add_to', 
+    url(r'^add-to/(?P<section_id>[\w-]+)/?$', 'add_to', 
         name="add"
     ), 
     url(r'^delete/(?P<section_id>\d+)/?$', 'delete', 

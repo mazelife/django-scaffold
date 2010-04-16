@@ -3,30 +3,28 @@
 {% block breadcrumbs %}
 <div class="breadcrumbs">
      <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo;
-     <a href="{%url sections:sections_index%}">{% trans "Sections" %}</a>&rsaquo;      
-     {% trans "Edit" %} {{node.type}} <em>{{node.title}}</em>
+     <a href="{%url sections:sections_index%}">{% trans "Section" %}</a> &rsaquo;      
+     {% trans "Edit" %} {{section.type}} <em>{{section.title}}</em>
 </div>
 {% endblock %}
 {% block content %}
 <div id="content-main">
     {{ form.media }}
-    <link rel="stylesheet" href="{{MEDIA_URL}}styles/sections-admin.css" type="text/css" media="all">
-    {%ifnotequal node.depth 1%}
+    <link rel="stylesheet" href="{{MEDIA_URL}}styles/section-admin.css" type="text/css" media="all">
+    {%ifnotequal section.depth 1%}
     <p class=note">You are editing a subsection.</p>
     {%else%}
     <p class=note">You are editing a section.</p>
     {%endifnotequal%}
-    <form enctype="multipart/form-data" action="{%url sections:edit node_id=node.pk%}" method="POST">
+    <form enctype="multipart/form-data" action="{%url sections:edit section_id=section.pk%}" method="POST">
     <table>
     {{ form.as_table }}
-    <tr><td colspan="2"><h3>Section Library Sources:</h3></td></tr>
-    {{source_inline_form.as_table}}
     </table>
     
     <input type="submit" value="Save" />
     </form>
-    <a class="move" href="{%url sections:move node_id=node.pk%}">Move this {%ifnotequal node.depth 1%}subsection{%else%}section{%endifnotequal%} &raquo;</a>
-    <h2>Items Belonging to this {{node.type}}</h2>
+    <a class="move" href="{%url sections:move section_id=section.pk%}">Move this {%ifnotequal section.depth 1%}subsection{%else%}section{%endifnotequal%} &raquo;</a>
+    <h2>Items Belonging to this {{section.type}}</h2>
     <table>
     <thead><tr><th>Title</th><th>Content Type</th></thead>
     <tbody>
@@ -40,10 +38,10 @@
     </tbody>
     </table>
 </div>
-{%if node.is_root%}
+{%if section.is_root%}
 <script type="text/javascript">
 $(document).ready(function () {
-    // Hide fields which are not required for root nodes.
+    // Hide fields which are not required for root sections.
     var labels = ['id_sub_teaser']
     for (var i = 0; i < labels.length; i++) {
         $("label[for='" + labels[i] + "']").parent().parent().hide();
