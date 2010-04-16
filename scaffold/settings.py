@@ -3,6 +3,7 @@ from django.conf import settings
 _project_settings_registry = []
 
 def _get_setting(project_setting_name, default=None, required=False):
+    project_setting_name = "SCAFFOLD_%s" % project_setting_name
     _project_settings_registry.insert(0, project_setting_name)
     if required and not default:
             assert hasattr(settings, project_setting_name), (
@@ -12,24 +13,23 @@ def _get_setting(project_setting_name, default=None, required=False):
     return getattr(settings, project_setting_name, default)
     
 
-EXTENDING_APP_NAME = _get_setting('SCAFFOLD_EXTENDING_APP_NAME', 
+EXTENDING_APP_NAME = _get_setting('EXTENDING_APP_NAME', 
     required=True
 )
 
-EXTENDING_MODEL_PATH = _get_setting('SCAFFOLD_EXTENDING_MODEL_PATH',     
+EXTENDING_MODEL_PATH = _get_setting('EXTENDING_MODEL_PATH',     
     default = "%s.models.Section" % EXTENDING_APP_NAME
 )
 
-EXTENDING_VIEW_PATH = _get_setting('SCAFFOLD_EXTENDING_VIEW_PATH',     
+EXTENDING_VIEW_PATH = _get_setting('EXTENDING_VIEW_PATH',     
     default = "%s.views" % EXTENDING_APP_NAME
 )
 
-EXTENDING_ADMIN_VIEW_PATH = _get_setting('SCAFFOLD_EXTENDING_ADMIN_VIEW_PATH',     
+EXTENDING_ADMIN_VIEW_PATH = _get_setting('EXTENDING_ADMIN_VIEW_PATH',     
     default = "%s.admin_views" % EXTENDING_APP_NAME
 )
 
-
-LINK_HTML = _get_setting('SCAFFOLD_LINK_HTML', default={
+LINK_HTML = _get_setting('LINK_HTML', default={
     'add_link': (
         "<a class=\"addlink\" href=\"add-to/%s/\">"
         "add child</a>"
@@ -48,8 +48,10 @@ LINK_HTML = _get_setting('SCAFFOLD_LINK_HTML', default={
     )         
 })
 
-PATH_CACHE_TTL = _get_setting('SCAFFOLD_PATH_CACHE_TTL' default= 60 * 60 * 12)
-PATH_CACHE_KEY = _get_setting('SCAFFOLD_PATH_CACHE_KEY',
+PATH_CACHE_TTL = _get_setting('PATH_CACHE_TTL',
+    default = (60 * 60 * 12)
+)
+PATH_CACHE_KEY = _get_setting('PATH_CACHE_KEY',
     default="section-path-map" 
 )
 def get_extending_model():
