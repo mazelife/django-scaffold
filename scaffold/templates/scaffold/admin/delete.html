@@ -1,41 +1,39 @@
 {% extends "admin/delete_confirmation.html" %}
 {% load i18n %}
-<title>Remove {{section.type}} "{{section.title}}"</title>
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{{MEDIA_URL}}scaffold/styles/scaffold-admin.css" type="text/css" media="screen"/>
+    <style type="text/css" media="screen">
+    .errornote {
+        margin-bottom: 10px; 
+        width: 330px;
+    }
+    </style>    
+{%endblock%}
 {% block breadcrumbs %}
 <div class="breadcrumbs">
-    <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo;
-    <a href="{%url sections:sections_index%}">{% trans "Sections" %}</a> &rsaquo; 
+      <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo; 
+      <a href="{%url sections:sections_index%}">{% trans "Sections" %}</a> &rsaquo;       
      {% trans 'Delete'%} {{section.type}} <em>{{section.title}}</em>
 </div>
 {% endblock %}
 {% block content %}
-{% if perms_lacking %}
-    <p>{% blocktrans with section as escaped_section %}Deleting the {{escaped_section.type}} '{{escaped_section.title}}' would result in deleting related objects, but your account doesn't have permission to do so.{% endblocktrans %}</p>
-{% else %}
-<style type="text/css">
-.errornote {
-    margin-bottom: 10px; 
-    width: 330px;
-}
-</style>
 <h2>Are you sure?</h2>
-<p>Are you sure you want to delete the 
-{{section.type}} <strong>{{section.title}}</strong>?</p>
+<p>Are you sure you want to delete the {{section.type}} <strong>{{section.title}}</strong> permanently?</p>
 {%if not section.is_leaf%}
 {%with section.get_descendants as descendants%} 
 <div class="errornote">
-<p><strong>Warning!</strong> This {{section.type}} 
-contains {{descendants|length}} other subsection{{descendants|length|pluralize}}:
-<ul>{%for subsection in descendants%}
-    <li>{{subsection.title}}</li>
-{%endfor%}</ul>
-If you delete this {{section.type}}, the {{descendants|length|pluralize:"other,others"}} will be deleted as well!</p>
+    <p><strong>Warning!</strong> This {{section.type}} contains {{descendants|length}} other subsection{{descendants|length|pluralize}}:</p>
+    <ul>
+    {%for subsection in descendants%}
+        <li>{{subsection.title}}</li>
+    {%endfor%}
+    </ul>
+    <p>If you delete this {{section.type}}, the {{descendants|length|pluralize:"other,others"}} will be deleted as well!</p>
 </div>
 {%endwith%}
 {%endif%}
 <form action="{%url sections:delete section_id=section.pk%}" method="POST">
 <input type="submit" value="Yes, I'm sure" />
 </form>
-{% endif %}
 {% endblock %}
-

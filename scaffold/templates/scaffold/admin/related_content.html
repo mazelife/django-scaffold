@@ -1,28 +1,28 @@
 {% extends "admin/change_list.html" %}
 {% load i18n %}
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{{MEDIA_URL}}scaffold/styles/scaffold-admin.css" type="text/css" media="screen"/>
+    <style type="text/css" media="screen">
+    th { font-weight: normal; }
+    th.active  { font-weight: bold; text-decoration: underline; }
+    </style>
+{%endblock%}
 {% block breadcrumbs %}
 <div class="breadcrumbs">
-     <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo;
-     <a href="{%url sections:sections_index%}">{% trans "Sections" %}</a>&rsaquo;      
-     {% trans "Content For"%} {{node.type}} <em>{{node.title}}</em>
+      <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo; 
+      <a href="{%url sections:sections_index%}">{% trans "Sections" %}</a> &rsaquo;       
+      {% trans "Content related to"%} {{node.type}} <em>{{node.title}}</em>
 </div>
 {% endblock %}
 {% block content %}
-<script src="{{MEDIA_URL}}js/jquery.js" type="text/javascript"></script>
-<script src="{{MEDIA_URL}}js/jquery.treeview.js" type="text/javascript"></script>
-<style type="text/css">
-th { font-weight: normal; }
-th.active  { font-weight: bold; text-decoration: underline; }
-</style>
-<br/>
 <p>Click a column to sort</p>
 <table>
 <thead>
     <tr>
         <th{%ifequal sort "name"%} class="active"{%endifequal%}><a href="?sort=name">Title</a></th>
         <th{%ifequal sort "date"%} class="active"{%endifequal%}><a href="?sort=date">Date</a></th>
-        <th{%ifequal sort "content"%} class="active"{%endifequal%} colspan="2"><a href="?sort=content">Content Type</a></th>
-        
+        <th{%ifequal sort "content"%} class="active"{%endifequal%} colspan="2"><a href="?sort=content">Content Type</a></th>        
     </tr>
 </thead>
 <tbody>
@@ -46,11 +46,9 @@ th.active  { font-weight: bold; text-decoration: underline; }
         {% if related_content.has_previous %}
             <a href="?page={{ related_content.previous_page_number }}">previous</a>
         {% endif %}
-
         <span class="current">
             Page {{ related_content.number }} of {{ related_content.paginator.num_pages }}.
         </span>
-
         {% if related_content.has_next %}
             <a href="?page={{ related_content.next_page_number }}">next</a>
         {% endif %}

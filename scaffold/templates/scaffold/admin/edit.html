@@ -1,26 +1,28 @@
 {% extends "admin/change_form.html" %}
 {% load i18n %}
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{{MEDIA_URL}}scaffold/styles/scaffold-admin.css" type="text/css" media="screen"/>
+    {{ form.media }}
+{%endblock%}
 {% block breadcrumbs %}
 <div class="breadcrumbs">
-     <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo;
-     <a href="{%url sections:sections_index%}">{% trans "Section" %}</a> &rsaquo;      
-     {% trans "Edit" %} {{section.type}} <em>{{section.title}}</em>
+      <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo; 
+      <a href="{%url sections:sections_index%}">{% trans "Sections" %}</a> &rsaquo;       
+      {% trans "Edit" %} {{section.type}} <em>{{section.title}}</em>
 </div>
 {% endblock %}
 {% block content %}
 <div id="content-main">
-    {{ form.media }}
-    <link rel="stylesheet" href="{{MEDIA_URL}}styles/section-admin.css" type="text/css" media="all">
     {%ifnotequal section.depth 1%}
-    <p class=note">You are editing a subsection.</p>
+    <p class="note">You are editing a subsection.</p>
     {%else%}
-    <p class=note">You are editing a section.</p>
+    <p class="note">You are editing a section.</p>
     {%endifnotequal%}
     <form enctype="multipart/form-data" action="{%url sections:edit section_id=section.pk%}" method="POST">
     <table>
     {{ form.as_table }}
     </table>
-    
     <input type="submit" value="Save" />
     </form>
     <a class="move" href="{%url sections:move section_id=section.pk%}">Move this {%ifnotequal section.depth 1%}subsection{%else%}section{%endifnotequal%} &raquo;</a>
@@ -28,7 +30,7 @@
     <table>
     <thead><tr><th>Title</th><th>Content Type</th></thead>
     <tbody>
-    {%for item, app, obj, relationship_type in fk_related_items%}
+    {%for item, app, obj, relationship_type in related_content%}
         <tr>
             <td><a href="{{item.get_absolute_url}}">{{item}}</a></td><td>{{obj}}</td>
         </tr>

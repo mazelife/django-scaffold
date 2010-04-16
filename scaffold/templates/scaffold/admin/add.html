@@ -1,33 +1,36 @@
 {% extends "admin/change_form.html" %}
 {% load i18n %}
+{% load i18n %}
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{{MEDIA_URL}}scaffold/styles/scaffold-admin.css" type="text/css" media="screen"/>
+    {{section_form.media}}
+{%endblock%}
 {% block breadcrumbs %}
 <div class="breadcrumbs">
-     <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo;
-  <a href="{%url sections:sections_index%}">{% trans "Sections" %}</a> &rsaquo; 
-     Add 
-     {%if not node%}
-     {% trans "Section: " %}{%else%}{% trans "Subsection: " %}
-     {%endif%}{{node.title}}
+      <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo; 
+      <a href="{%url sections:sections_index%}">{% trans "Sections" %}</a> &rsaquo;       
+      {%trans "Add"%} 
+      {%if not node%}
+      {% trans "Section:" %} {%else%}{% trans "Subsection:" %} 
+      {%endif%}{{node.title}}
 </div>
 {% endblock %}
 {% block content %}
-{{section_form.media}}
-{{source_inline_form.media}}
-<link rel="stylesheet" href="{{MEDIA_URL}}styles/sections-admin.css" type="text/css" media="all">
-{%if node%}
-<p>Belonging to: {{node.type}} <em>{{node.title}}</em></p>
-<form enctype="multipart/form-data" action="{%url sections:add section_id=node.pk%}" method="POST">
+{%if parent%}
+<p>Belonging to: {{parent.type}} <em>{{parent.title}}</em></p>
+<form enctype="multipart/form-data" action="{%url sections:add section_id=parent.pk%}" method="POST">
 {%else%}
 <form enctype="multipart/form-data" action="{%url sections:add section_id='root'%}" method="POST">
 {%endif%}
 <table>
 {{section_form.as_table}}
 </table>
-{%if node.has_children %}
-{%with node.get_children as children%}
+{%if parent.has_children %}
+{%with parent.get_children as children%}
 <fieldset class="position-node">
 <legend>Position New Section</legend>
-<p>'{{node.title}}' already has {{children|pluralize:"a subsection,some subsections"}} 
+<p class="notice">'{{parent.title}}' already has {{children|pluralize:"a subsection,some subsections"}} 
 ({%for child in children%}<em>{{child.title}}</em>{%if not forloop.last%}, {%endif%}{%endfor%})
 . How do you want to position this new section in relation to {{children|pluralize:"it,them"}}?</p>
 <label>Add this subsection 

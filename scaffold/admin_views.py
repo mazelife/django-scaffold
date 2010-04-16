@@ -142,7 +142,7 @@ def add_to(request, section_id):
     return simple.direct_to_template(request, 
         template = "scaffold/admin/add.html",
         extra_context = {
-            'node': parent,
+            'parent': parent,
             'section_form': section_form,
             'title': "New %s" % (parent and "subsection" or "section")
         }
@@ -194,7 +194,7 @@ def edit(request, section_id):
             'section': section, 
             'form': section_form,
             'title': "Edit %s '%s'" % (section.type, section.title),
-            'fk_related_items': section.get_associated_content()
+            'related_content': section.get_related_content()
         }
     )
 

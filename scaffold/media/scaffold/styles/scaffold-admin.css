@@ -1,0 +1,48 @@
+label {
+    display: block;
+    float: left;
+    width: 89px;
+}
+
+form p { margin-bottom: 25px; }
+
+fieldset.position-node {
+    margin: 10px 0 20px 0;
+    padding: 10px;
+    width: 400px;
+}
+
+fieldset.position-node * {
+    width: auto;
+    position: inline;
+}
+
+.move {
+    padding-top: 10px;
+    display: block;
+    width: 100px;
+}
+
+#image-preview {
+    margin-left: 600px;
+    margin-top: -30px;
+    width: 200px;
+    padding: 25px;
+    border: 1px solid silver;
+}
+
+.notice {
+    padding: 10px;
+    margin: 10px 0;
+}
+
+#id_slug, 
+#id_title, 
+#id_short_title { width: 500px; }
+
+/* Index Page */ 
+#node-list li { 
+    font-size: 10px; 
+    list-style-type: none; 
+}
+#node-list li span { font-size: 16px;}
