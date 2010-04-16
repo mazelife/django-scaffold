@@ -48,6 +48,10 @@ LINK_HTML = _get_setting('SCAFFOLD_LINK_HTML', default={
     )         
 })
 
+PATH_CACHE_TTL = _get_setting('SCAFFOLD_PATH_CACHE_TTL' default= 60 * 60 * 12)
+PATH_CACHE_KEY = _get_setting('SCAFFOLD_PATH_CACHE_KEY',
+    default="section-path-map" 
+)
 def get_extending_model():
     """
     This method returns the model that subclasses BaseSection.
