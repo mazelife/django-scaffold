@@ -10,7 +10,7 @@ class SectionForm(forms.ModelForm):
         
     class Meta:
         model = app_settings.get_extending_model()
-        exclude = ('path', 'depth', 'numchild')
+        exclude = ('path', 'depth', 'numchild', 'order')
     
     def save(self, *args, **kwargs):
         """

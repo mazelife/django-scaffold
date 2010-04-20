@@ -31,7 +31,7 @@ def _get_section_path_map():
     """
     paths = cache.get(app_settings.PATH_CACHE_KEY)
     if not paths:
-        return _build_section_path_map()
+        paths = _build_section_path_map()
     return paths
 
 def get_current_section():
@@ -51,15 +51,15 @@ def get_current_section():
     return getattr(_thread_locals, 'section', None)
 
 def lookup_section_from_request(request):
-    section = None
     path_map = _get_section_path_map()
-    path = request.path
-    paths = path_map.keys()
-    paths.sort(lambda x, y: len(x) <= len(y) and 1 or -1)
-    matches = [p for p in paths if path.startswith(p)]
+    section_paths = path_map.keys()
+    # Short by shortest path to longest:
+    section_paths.sort(lambda x, y: len(x) <= len(y) and 1 or -1)
+    matches = [p for p in section_paths if request.path.startswith(p)]
     if len(matches) >= 1:
-        section = Section.objects.get(slug=path_map[matches[0]])
-    return section        
+        return Section.objects.get(slug=path_map[matches[0]])
+    else:
+        return None
 
 class SectionsMiddleware(object):
     """

@@ -48,6 +48,8 @@ LINK_HTML = _get_setting('LINK_HTML', default={
     )         
 })
 
+MOUNT_POINT = _get_setting('MOUNT_POINT', default=None)
+
 PATH_CACHE_TTL = _get_setting('PATH_CACHE_TTL',
     default = (60 * 60 * 12)
 )

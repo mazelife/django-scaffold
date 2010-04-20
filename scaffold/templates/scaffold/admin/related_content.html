@@ -17,7 +17,7 @@
 {% endblock %}
 {% block content %}
 <p>Click a column to sort</p>
-<table>
+<table class="item-order">
 <thead>
     <tr>
         <th{%ifequal sort "name"%} class="active"{%endifequal%}><a href="?sort=name">Title</a></th>
@@ -36,7 +36,7 @@
         <td><a href="{{edit_url}}">Edit {{obj}}</a></td>
     </tr>
 {%empty%}
-    <tr><td colspan="2">No objects assigned to the section.</td></tr>
+    <tr><td colspan="3">No objects assigned to the section.</td></tr>
 {%endfor%}
 </tbody>
 </table>

@@ -23,7 +23,7 @@ class BaseSection(MP_Node):
         permissions = (
             ('can_view_associated_content', 'Can view associated content',),
         )
-        ordering = ['order']
+        ordering = ['path']
     
     def __unicode__(self):
         indent_string = "-" * (self.get_depth() - 1)
@@ -116,7 +116,6 @@ class BaseSection(MP_Node):
                 )
                 if object_id not in object_ids:
                     object_ids.insert(0, object_id)
-                    processed_associations.insert(0, assoc_id)
                     associated_content.insert(0,(
                         fk_item, 
                         fk_item._meta.app_label,
@@ -156,10 +155,13 @@ class BaseSection(MP_Node):
         This method returns an aggregation of all content that's associated 
         with a section, including subsections, and other objects related via 
         any type of foreign key. To restrict the types of objetcs that are      
-        returned from foreign-key relationships, the only argument takes a list
-        of items with the signature {app name}.{model name}. For example, if 
-        you wanted to retrieve a list of all subsections and associated 
-        articles only, you could do the following:
+        returned from foreign-key relationships, the only argument takes a  
+        list of items with the signature:
+        
+            {app name}.{model name}
+        
+        For example, if you wanted to retrieve a list of all subsections and 
+        associated articles only, you could do the following:
         
         >>> section = Section.objects.all()[0]
         >>> section.get_associated_content(only=['articles.article'])
@@ -184,6 +186,8 @@ class BaseSection(MP_Node):
                 if "%s.%s" % (app, model) in only:
                         setattr(obj, 'content_type', "%s.%s" % (app, model))
                         associated_content.insert(0, obj)
+        else:
+            [associated_content.insert(0, c[0]) for c in related_content]
         [associated_content.insert(0, sub) for sub in self.get_subsections()]
         # Now shuffle them together:
         if sort_key:

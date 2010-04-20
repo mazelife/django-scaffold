@@ -23,9 +23,11 @@
     <table>
     {{ form.as_table }}
     </table>
-    <input type="submit" value="Save" />
+    <div class="submit-row">
+    <a class="button move" href="{%url sections:move section_id=section.pk%}">Move this {%ifnotequal section.depth 1%}subsection{%else%}section{%endifnotequal%} &raquo;</a>
+    <input type="submit" name="_save" class="default" value="Save">
+    </div>
     </form>
-    <a class="move" href="{%url sections:move section_id=section.pk%}">Move this {%ifnotequal section.depth 1%}subsection{%else%}section{%endifnotequal%} &raquo;</a>
     <h2>Items Belonging to this {{section.type}}</h2>
     <table>
     <thead><tr><th>Title</th><th>Content Type</th></thead>
@@ -40,15 +42,4 @@
     </tbody>
     </table>
 </div>
-{%if section.is_root%}
-<script type="text/javascript">
-$(document).ready(function () {
-    // Hide fields which are not required for root sections.
-    var labels = ['id_sub_teaser']
-    for (var i = 0; i < labels.length; i++) {
-        $("label[for='" + labels[i] + "']").parent().parent().hide();
-    }
-});
-</script>
-{%endif%}
 {%endblock%}

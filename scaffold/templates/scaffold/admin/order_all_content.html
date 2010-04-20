@@ -1,52 +1,68 @@
 {% extends "admin/change_list.html" %}
-{% load i18n %}
+{% load i18n adminmedia %}
 {% block extrastyle %}
     {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{% admin_media_prefix %}css/forms.css" />
     <link rel="stylesheet" href="{{MEDIA_URL}}scaffold/styles/scaffold-admin.css" type="text/css" media="screen"/>
-    <style type="text/css" media="screen">
-    th { font-weight: normal; }
-    th.active  { font-weight: bold; text-decoration: underline; }
-    </style>
+    <link rel="stylesheet" href="{{MEDIA_URL}}scaffold/styles/jquery.ui.start/jquery.ui.css" type="text/css">   
     <script src="{{MEDIA_URL}}scaffold/scripts/jquery.js" type="text/javascript"></script>
+    <script src="{{MEDIA_URL}}scaffold/scripts/jquery.ui.js" type="text/javascript"></script>
 {%endblock%}
 {% block breadcrumbs %}
 <div class="breadcrumbs">
       <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo; 
       <a href="{%url sections:sections_index%}">{% trans "Sections" %}</a> &rsaquo;       
-      {%trans "Order content for"%} {{section.type}} <em>{{section.title}}</em>
+      {%trans "Order content for the"%} {{section.type}} <em>{{section.title}}</em>
 </div>
 {% endblock %}
 {% block content %}
+<p>The following items belong to the <em>{{section.title}}</em> {{section.type}}. Drag and drop the obects to place them in the correct order.</p> 
 <form action="{%url sections:order section_id=section.pk%}" method="POST">
-    <table>
-    <thead>
-        <tr>
-            <th>Title</th>
-            <th>Date</th>
-            <th>Content Type</th>
-            <th>Order</th>
-        </tr>
-    </thead>
-    <tbody>
+    <ul id="sortable">
     {%for item, date, app, obj, relationship_type, order in related_content%}
-        <tr>
-            <td>
-                {%if item.get_absolute_url%}
-                <a href="{{item.get_absolute_url}}">
-                {%endif%}
+    <li class="ui-state-default">
+        <div>
+            <h5>{{obj}}:</h5>
+            <h4>
+                {%if item.get_absolute_url%}<a href="{{item.get_absolute_url}}">{%endif%}
                 {%if item.title%}{{item.title}}{%else%}{%if item.headline%}{{item.headline}}{%else%}{{item}}{%endif%}{%endif%}
+                {%if date%}<span>({{date|date:'D, F j, Y'}})</span>{%endif%}
                 {%if item.get_absolute_url%}</a>{%endif%}
-            </td>
-            <td>{%if date%}{{date|date:'D, F j, Y'}}{%else%}No date{%endif%}</td>
-            <td>{{obj}}</td>
-            <td><input type="text" name="{{app}}-{{obj}}-{{item.pk}}" value="{{item.order}}"></td>
-        </tr>
-    {%empty%}
-        <tr><td colspan="2">No objects assigned to the section.</td></tr>
+            </h4>
+            <label>Order: <input type="text" name="{{app}}-{{obj}}-{{item.pk}}" value="{{item.order}}" class="order-field"></label>
+        </div>
+        
+    </li>
     {%endfor%}
-    </tbody>
-    </table>
-    <br/>
-    <input type="submit" value="Save"/>
+    </ul>
+    <div class="submit-row">
+        <input type="submit" value="Save ordering" class="default" name="_save">
+    </div>
+
 </form>
+<script type="text/javascript">
+var sorter = function() {
+    var container_selector = "#sortable";
+    return {
+        'init': function() {
+            if (arguments.length > 0) container_selector = arguments[0];
+            $(container_selector + " label").hide();
+            $(container_selector).sortable({
+                placeholder: 'ui-state-highlight',
+                'update': this.update_list,
+            });
+            $(container_selector).disableSelection();
+            this.update_list();
+        },
+        'update_list': function(evt, ui) {
+            var fields = $(container_selector + " .order-field");
+            for (var i = 0; i < fields.length; i++) {
+                $(fields[i]).val(i);
+            }
+        }
+    }
+}();
+
+sorter.init();
+</script>
 {% endblock %}

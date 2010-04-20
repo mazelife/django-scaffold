@@ -18,9 +18,9 @@ fieldset.position-node * {
 }
 
 .move {
-    padding-top: 10px;
-    display: block;
-    width: 100px;
+    display:block;
+    float:left;
+    padding:3px;
 }
 
 #image-preview {
@@ -36,9 +36,10 @@ fieldset.position-node * {
     margin: 10px 0;
 }
 
-#id_slug, 
-#id_title, 
-#id_short_title { width: 500px; }
+#id_slug { width: 300px;}
+#id_title { width: 500px; }
+
+.item-order {margin: 20px;}
 
 /* Index Page */ 
 #node-list li { 
@@ -46,3 +47,25 @@ fieldset.position-node * {
     list-style-type: none; 
 }
 #node-list li span { font-size: 16px;}
+
+/* Sorting Page */
+
+#sortable {
+    padding: 0px;
+    width: 650px;
+}
+#sortable li { padding: 5px;}
+#sortable li div { 
+    background: #fff;
+    padding: 10px 20px;
+    opacity: .7;
+    -moz-opacity: .5;
+    filter: alpha(opacity=50); 
+}
+#sortable li h4,
+#sortable li h5 { padding: 2px; margin: 0px;}
+#sortable li h4, 
+#sortable li h4 a  { color: #666666; }
+#sortable li h4 { font-size: 1.3em;}
+#sortable .ui-state-highlight { height: 52px; }
+#sortable label { float: right; width: auto; margin-top: -30px;}

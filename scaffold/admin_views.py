@@ -359,6 +359,9 @@ def order_all_content(request, section_id):
         extra_context = {
             'section': section,
             'related_content': content_table,
-            'title': "'%s' %s Related Content" % (section.title, section.type),
+            'title': "Order Content for the %s \"%s\"" % (
+                section.type, 
+                section.title, 
+            )
         }
     )    

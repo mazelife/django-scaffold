@@ -4,7 +4,7 @@ from django.views.generic import simple
 
 import settings as app_settings
 
-urlpatterns = patterns(app_settings .EXTENDING_VIEW_PATH, 
+urlpatterns = patterns(app_settings.EXTENDING_VIEW_PATH, 
     # We will 'namespace' the index name to avoid collisions with other 
     # admin view names. 
     url(r'^$', 'index', 
