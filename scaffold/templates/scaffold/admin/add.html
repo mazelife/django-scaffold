@@ -4,6 +4,7 @@
 {% block extrastyle %}
     {{ block.super }}
     <link rel="stylesheet" href="{{MEDIA_URL}}scaffold/styles/scaffold-admin.css" type="text/css" media="screen"/>
+    <link rel="stylesheet" href="{{MEDIA_URL}}scaffold/styles/jquery.ui.start/jquery.ui.css" type="text/css">   
     {{section_form.media}}
 {%endblock%}
 {% block breadcrumbs %}
@@ -28,10 +29,10 @@
 </table>
 {%if parent.has_children %}
 {%with parent.get_children as children%}
-<fieldset class="position-node">
+<fieldset class="position-node ui-state-highlight ui-corner-all">
 <legend>Position New Section</legend>
 <p class="notice">'{{parent.title}}' already has {{children|pluralize:"a subsection,some subsections"}} 
-({%for child in children%}<em>{{child.title}}</em>{%if not forloop.last%}, {%endif%}{%endfor%})
+({%for child in children%}<em>{{child.title}}</em>{%if not forloop.last%}, {%endif%}{%endfor%} )
 . How do you want to position this new section in relation to {{children|pluralize:"it,them"}}?</p>
 <label>Add this subsection 
     <select name="position">

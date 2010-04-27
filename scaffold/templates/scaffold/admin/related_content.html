@@ -12,12 +12,12 @@
 <div class="breadcrumbs">
       <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo; 
       <a href="{%url sections:sections_index%}">{% trans "Sections" %}</a> &rsaquo;       
-      {% trans "Content related to"%} {{node.type}} <em>{{node.title}}</em>
+      {% trans "Content related to"%} the {{section.type}} <em>{{section.title}}</em>
 </div>
 {% endblock %}
 {% block content %}
 <p>Click a column to sort</p>
-<table class="item-order">
+<table class="related-content">
 <thead>
     <tr>
         <th{%ifequal sort "name"%} class="active"{%endifequal%}><a href="?sort=name">Title</a></th>
@@ -31,9 +31,9 @@
         <td><a href="{{item.get_absolute_url}}">
             {%if item.title%}{{item.title}}{%else%}{%if item.headline%}{{item.headline}}{%else%}{{item}}{%endif%}{%endif%}
         </a></td>
-        <td>{%if date%}{{date|date:'D, F j, Y'}}{%endif%}</td>
+        <td>{%if date%}{{date|date:'D, F j, Y'}}{%else%}(no date){%endif%}</td>
         <td>{{obj}}</td>
-        <td><a href="{{edit_url}}">Edit {{obj}}</a></td>
+        <td><a class="changelink" href="{{edit_url}}">Edit</a></td>
     </tr>
 {%empty%}
     <tr><td colspan="3">No objects assigned to the section.</td></tr>

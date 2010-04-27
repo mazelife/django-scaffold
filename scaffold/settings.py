@@ -41,11 +41,7 @@ LINK_HTML = _get_setting('LINK_HTML', default={
     'list_link': (
         "<a class=\"changelink\" href=\"related/%s/\">"
         "list content</a>" 
-    ),
-    'order_link': (
-        "<a class=\"changelink\" href=\"order/%s/\">"
-        "order content</a>"
-    )         
+    )
 })
 
 MOUNT_POINT = _get_setting('MOUNT_POINT', default=None)
@@ -56,6 +52,11 @@ PATH_CACHE_TTL = _get_setting('PATH_CACHE_TTL',
 PATH_CACHE_KEY = _get_setting('PATH_CACHE_KEY',
     default="section-path-map" 
 )
+
+ALLOW_ASSOCIATED_ORDERING = _get_setting('ALLOW_ASSOCIATED_ORDERING',   
+    default=True
+)
+
 def get_extending_model():
     """
     This method returns the model that subclasses BaseSection.

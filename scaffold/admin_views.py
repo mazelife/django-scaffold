@@ -4,7 +4,7 @@ from functools import partial
 from django.contrib.auth.decorators import permission_required
 from django.contrib.admin import site
 from django.core.paginator import Paginator
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseBadRequest, \
     HttpResponseServerError
@@ -15,6 +15,7 @@ from forms import SectionForm
 import settings as app_settings
 
 app_name =  app_settings.EXTENDING_APP_NAME
+allow_associated_ordering = app_settings.ALLOW_ASSOCIATED_ORDERING
 Section = app_settings.get_extending_model()
 
 @site.admin_view
@@ -64,7 +65,7 @@ def index(request):
 
     crawl_add_links = partial(
         crawl, 
-        admin_links=['add_link','del_link', 'list_link','order_link']
+        admin_links=['add_link','del_link', 'list_link']
     )
     node_list_html += "".join(map(crawl_add_links, roots))
     node_list_html += (
@@ -176,6 +177,7 @@ def edit(request, section_id):
     This view allows the user to edit Sections within the tree.
     """
     section = get_object_or_404(Section, pk=section_id)
+    rel_sort_key = allow_associated_ordering and 'order' or None
     if request.method == 'POST':
         section_form = SectionForm(request.POST, request.FILES,
             instance=section
@@ -194,7 +196,10 @@ def edit(request, section_id):
             'section': section, 
             'form': section_form,
             'title': "Edit %s '%s'" % (section.type, section.title),
-            'related_content': section.get_related_content()
+            'related_content': _get_content_table(section, 
+                sort_key=rel_sort_key
+            ),
+            'allow_associated_ordering': allow_associated_ordering,
         }
     )
 
@@ -238,21 +243,35 @@ def move(request, section_id):
                 url=reverse("sections:sections_index"), 
                 permanent=False
             )
+    # Exclude the node from the list of candidates:
     other_secs = Section.objects.exclude(pk=section_id)
-    # Exclude descendants of the node being moved:
+    # ...then exclude descendants of the node being moved:
     other_secs = [n for n in other_secs if not n.is_descendant_of(section)]
+    
+    # Provides a sections tree for user reference: 
+    def crawl(node):
+        html_class = node.pk == section.pk and ' class="active"' or ""
+        if node.is_leaf():
+            return "<li%s>%s</li>" % (html_class, node.title)
+        else:
+            children = node.get_children()
+            html = "<li%s>%s<ul>" % (html_class, node.title)      
+            html += "".join(
+                map(crawl, children)
+            )
+            return html + "</ul></li>"
+    root_nodes = Section.get_root_nodes()
+    tree_html = '<ul id="node-list" class="treeview-red">%s</ul>'
+    tree_html = tree_html % ("".join(map(crawl, root_nodes)))
     return simple.direct_to_template(request, 
         template = "scaffold/admin/move.html",
         extra_context = {
             'section': section,
             'tree': other_secs,
-            'title': "Move %s '%s'" % (section.type, section.title)
+            'title': "Move %s '%s'" % (section.type, section.title),
+            'preview': tree_html
         }
     )
-
-
-def order_all_content(request):
-    pass
 
 @site.admin_view
 @permission_required('%s.can_view_associated_content' % app_name)
@@ -264,22 +283,7 @@ def related_content(request, section_id, list_per_page=10):
     with a particular Section.
     """
     section = get_object_or_404(Section, id=section_id)
-    related_content = section.get_related_content()
-    content_table = []
-    for item, app, model, relationship_type in related_content:
-        edit_url = "admin:%s_%s_change" % (app, model.lower())
-        edit_url = reverse(edit_url, args=[item.id])
-        if item._meta.get_latest_by:
-            date = getattr(item, item._meta.get_latest_by)
-        else:
-            date = None
-        content_table.append((
-            item, 
-            date, 
-            app, 
-            model, 
-            relationship_type, edit_url
-        ))
+    content_table = _get_content_table(section)
     sort = request.GET.get('sort')
     sort_map = {
         'name': 0,
@@ -307,7 +311,7 @@ def related_content(request, section_id, list_per_page=10):
             'section': section,
             'sort': sort,
             'related_content': content_table,
-            'title': "'%s' %s Related Content" % (section.title, section.type),
+            'title': "'%s' %s related content" % (section.title, section.type),
         }
     )
 
@@ -320,40 +324,28 @@ def order_all_content(request, section_id):
     order of a particular section.
     """    
     section = get_object_or_404(Section, id=section_id)
-    all_children = section.get_associated_content(sort_key='order')
-    content_table = []
-    for item in all_children:
-        app = item._meta.app_label
-        model = item._meta.object_name 
-        if item._meta.get_latest_by:
-            date = getattr(item, item._meta.get_latest_by)
-        else:
-            date = None
-        content_table.append((item, date, app, model, item.order))
+    if not allow_associated_ordering:
+        return simple.redirect_to(request,
+            url=reverse("sections:edit", kwargs={'section_id': section.id}), 
+            permanent=False
+        )        
+    content_table = _get_content_table(section, sort_key='order')
     if request.method == 'POST':
-        resorted_content = []
-        for item, date, app, model, current_order in content_table:
+        for item, date, app, model, rel, edit_url in content_table:
             item_id = "%s-%s-%s" % (app, model, str(item.pk))
             item_order = request.POST.get(item_id, None)
             if item_order and item_order.isdigit():
-                current_order = int(item_order)
-                item.order = current_order
+                item.order = int(item_order)
                 item.save()
             else:
                 return HttpResponseBadRequest((
                     "Item order was not specified for every item, or the "
                     "order provided was not a number."
                 ))
-            resorted_content.append((item, date, app, model, item.order))
-        content_table = resorted_content
         return simple.redirect_to(request,
-            url=reverse("sections:sections_index"), 
+            url=reverse("sections:edit", kwargs={'section_id': section.id}), 
             permanent=False
         )        
-    content_table = sorted(
-        content_table, 
-        key=operator.itemgetter(4)
-    )
     return simple.direct_to_template(request, 
         template = "scaffold/admin/order_all_content.html",
         extra_context = {
@@ -364,4 +356,39 @@ def order_all_content(request, section_id):
                 section.title, 
             )
         }
-    )    
+    )
+
+def _get_content_table(section, sort_key=None):
+    """
+    Not a view function; returns list of tuples containing:
+    
+    * the related object
+    * its date (from get_latest_by prop, if it's set)
+    * the application the object belongs to
+    * the model the object belongs to
+    * The type of relationship 
+    * the URL in the admin that will allow you to edit the object
+    
+    """
+    related_content = section.get_associated_content(sort_key=sort_key)
+    content_table = []
+    for item, app, model, relationship_type in related_content:
+        edit_url = "admin:%s_%s_change" % (app, model.lower())
+        try:
+            edit_url = reverse(edit_url, args=[item.id])
+        except:
+            edit_url = "%s:edit" % app
+            edit_url = reverse(edit_url, kwargs={'section_id': item.id})
+        if item._meta.get_latest_by:
+            date = getattr(item, item._meta.get_latest_by)
+        else:
+            date = None
+        content_table.append((
+             item, 
+             date, 
+             app, 
+             model, 
+             relationship_type, 
+             edit_url
+        ))
+    return content_table   

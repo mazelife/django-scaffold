@@ -24,22 +24,37 @@
     {{ form.as_table }}
     </table>
     <div class="submit-row">
-    <a class="button move" href="{%url sections:move section_id=section.pk%}">Move this {%ifnotequal section.depth 1%}subsection{%else%}section{%endifnotequal%} &raquo;</a>
+    <a class="button left" href="{%url sections:move section_id=section.pk%}">Move this {%ifnotequal section.depth 1%}subsection{%else%}section{%endifnotequal%} &raquo;</a>
+    {%if allow_associated_ordering%}
+    <a class="button left" href="{%url sections:order section_id=section.pk%}">Order this {%ifnotequal section.depth 1%}subsection{%else%}section{%endifnotequal%}'s content &raquo;</a>
+    {%endif%}
     <input type="submit" name="_save" class="default" value="Save">
     </div>
     </form>
     <h2>Items Belonging to this {{section.type}}</h2>
-    <table>
-    <thead><tr><th>Title</th><th>Content Type</th></thead>
-    <tbody>
-    {%for item, app, obj, relationship_type in related_content%}
+    <table class="related-content">
+    <thead>
         <tr>
-            <td><a href="{{item.get_absolute_url}}">{{item}}</a></td><td>{{obj}}</td>
+            <th{%ifequal sort "name"%} class="active"{%endifequal%}>Title</th>
+            <th{%ifequal sort "date"%} class="active"{%endifequal%}>Date</th>
+            <th{%ifequal sort "content"%} class="active"{%endifequal%} colspan="2">Content Type</th>        
+        </tr>
+    </thead>
+    <tbody>
+    {%for item, date, app, model, relationship_type in related_content%}
+        <tr>
+            <td><a href="{{item.get_absolute_url}}">
+                {%if item.title%}{{item.title}}{%else%}{%if item.headline%}{{item.headline}}{%else%}{{item}}{%endif%}{%endif%}
+            </a></td>
+            <td>{%if date%}{{date|date:'D, F j, Y'}}{%else%}(no date){%endif%}</td>
+            <td>{{model}}</td>
+            <td><a class="changelink" href="{{edit_url}}">Edit</a></td>
         </tr>
     {%empty%}
-        <tr><td colspan="2">No objects assigned to the section.</td></tr>
+        <tr><td colspan="3">No objects assigned to the section.</td></tr>
     {%endfor%}
     </tbody>
     </table>
+
 </div>
 {%endblock%}

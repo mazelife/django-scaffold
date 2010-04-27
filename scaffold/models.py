@@ -46,9 +46,9 @@ class BaseSection(MP_Node):
     
     def get_first_populated_field(self, field_name):
         """
-        Returns the first non-empty instance of the given field in the sections 
-        treee. Will crawl from leaf to root, returning None if no non-empty 
-        field is encountered.
+        Returns the first non-empty instance of the given field in the 
+        sections tree. Will crawl from leaf to root, returning None if no 
+        non-empty field is encountered.
         """
         assert hashattr(self, field_name), "Field name does not exist."
         node = self
@@ -68,10 +68,11 @@ class BaseSection(MP_Node):
         generic foreign key (for example, through a subclass of the  
         SectionItem model).
         
-        This method returns a list of tuples: 
+        This method returns a list of tuples:
+        
             (object, app name, model name, relationship_type)
         
-        To sort associated content, pass a list possible sort fields in via the 
+        To sort associated content, pass a list of sort fields in via the 
         sort_fields argument. For example, let's say we have two types of 
         content we know could be attached to a section: articles and profiles      
         Articles should be sorted by their 'headline' field, while profiles 
@@ -82,14 +83,14 @@ class BaseSection(MP_Node):
        >>> section.get_related_content(sort_fields=['title', 'headline'])
         
         This will create a common sort key on all assciated objects based on    
-        the first of these fields that are present on the object, then sort the 
-        entire set based on that sort key. (NB: This key is temporary and is
-        removed from the items before they are returned.) 
+        the first of these fields that are present on the object, then sort 
+        the entire set based on that sort key. (NB: This key is temporary and 
+        is removed from the items before they are returned.) 
         
-        If 'infer_sort' is True, this will override the sort_fields options and 
-        select each content type's sort field based on the first item in the 
-        'ordering' property of it's Meta class. Obviously, infer_sort will only 
-        work if the types of fields that are being compared are the same.
+        If 'infer_sort' is True, this will override the sort_fields options 
+        and select each content type's sort field based on the first item in 
+        the 'ordering' property of it's Meta class. Obviously, infer_sort will  
+        only work if the types of fields that are being compared are the same.
         
         """
         associated_content = []
@@ -182,16 +183,39 @@ class BaseSection(MP_Node):
         related_content = self.get_related_content()
         associated_content = []
         if len(only) != 0:
-            for obj, app, models, rel in related_content:
+            for obj, app, model, rel in related_content:
                 if "%s.%s" % (app, model) in only:
                         setattr(obj, 'content_type', "%s.%s" % (app, model))
-                        associated_content.insert(0, obj)
+                        associated_content.insert(0, (
+                            obj,
+                            app,
+                            model,
+                            rel
+                        ))
         else:
-            [associated_content.insert(0, c[0]) for c in related_content]
-        [associated_content.insert(0, sub) for sub in self.get_subsections()]
+            for obj, app, model, rel in related_content:
+                setattr(obj, 'content_type', "%s.%s" % (app, model))
+                associated_content.insert(0, (
+                    obj,
+                    app,
+                    model,
+                    rel
+                ))
+        for subsection in self.get_subsections():
+            app = subsection._meta.app_label
+            model = subsection._meta.object_name
+            if len(only) == 0 or app + "." + model in only: 
+                associated_content.insert(0, (
+                    subsection,
+                    app,
+                    model,
+                    'subsection'
+                ))
         # Now shuffle them together:
+        def sort_list(x, y):
+            return cmp(getattr(x[0],sort_key),getattr(y[0],sort_key))
         if sort_key:
-            associated_content.sort(key=operator.attrgetter(sort_key))
+            associated_content.sort(cmp=sort_list)
         return associated_content
 
 class SectionItem(models.Model):

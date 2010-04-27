@@ -33,7 +33,10 @@
         </div>
         
     </li>
+    {%empty%}
+    <li class="ui-state-error ui-corner-all"><strong>No associated content to order.</strong></li>
     {%endfor%}
+    
     </ul>
     <div class="submit-row">
         <input type="submit" value="Save ordering" class="default" name="_save">

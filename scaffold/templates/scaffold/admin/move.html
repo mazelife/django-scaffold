@@ -3,8 +3,12 @@
 {% block extrastyle %}
     {{ block.super }}
     <link rel="stylesheet" href="{{MEDIA_URL}}scaffold/styles/scaffold-admin.css" type="text/css" media="screen"/>
+    <link rel="stylesheet" href="{{MEDIA_URL}}scaffold/styles/jquery.treeview.css" type="text/css">
+    <script src="{{MEDIA_URL}}scaffold/scripts/jquery.js" type="text/javascript"></script>
+    <script src="{{MEDIA_URL}}scaffold/scripts/jquery.treeview.js" type="text/javascript"></script>    
     <style type="text/css" media="screen">
     label, input { display: inline; }
+    label { padding-right: 10px;}
     </style>
 {%endblock%}
 {% block breadcrumbs %}
@@ -15,7 +19,11 @@
 </div>
 {% endblock %}
 {% block content %}
-<form action="{%url sections:move section_id=section.pk%}" method="POST">
+<div class="sections-preview">
+<h4>Current Section Structure:</h4>
+{{preview|safe}}
+</div>
+<form action="{%url sections:move section_id=section.pk%}" method="POST" class="move-section">
 <label>Make this section a 
     <select name="relationship">
         <option value="neighbor">Neighbor</option>
@@ -32,4 +40,7 @@
 </label>   
 <input type="submit" value="Move" />
 </form>
+<script type="text/javascript">
+$(".sections-preview ul").treeview()
+</script>
 {%endblock%}
