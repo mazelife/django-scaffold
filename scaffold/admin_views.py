@@ -1,3 +1,4 @@
+from copy import copy
 import operator
 from functools import partial
 
@@ -29,6 +30,7 @@ def index(request):
     functions.
     """
     roots = Section.get_root_nodes()
+    link_html = _get_user_link_html(request)
     node_list_html = '<ul id="node-list" class="treeview-red">'
 
     def get_rendered_tree(root_nodes, admin_links=[], html_class=None):
@@ -40,7 +42,6 @@ def index(request):
         return tree_html
 
     def crawl(node, admin_links=[]):
-        link_html = app_settings.LINK_HTML
         link_list =  " " + " | ".join(
             [link_html[l] % node.pk for l in admin_links]
         )
@@ -65,13 +66,14 @@ def index(request):
 
     crawl_add_links = partial(
         crawl, 
-        admin_links=['add_link','del_link', 'list_link']
+        admin_links=link_html.keys()
     )
     node_list_html += "".join(map(crawl_add_links, roots))
-    node_list_html += (
-        '<li><a class="addlink" href="add-to/root/">'
-        'Add top-level section</a></li>'
-    )
+    if link_html.has_key('add_link'):        
+        node_list_html += (
+            '<li><a class="addlink" href="add-to/root/">'
+            'Add top-level section</a></li>'
+        )
     node_list_html += "</ul>"
     return simple.direct_to_template(request, 
         template = "scaffold/admin/index.html",
@@ -90,6 +92,7 @@ def add_to(request, section_id):
     inherits from django-treebeard's MP_Node, which has its own methods for new 
     node creation.
     """
+    commit_transaction = False
     if section_id == 'root':
         parent = None
     else:
@@ -131,15 +134,24 @@ def add_to(request, section_id):
                     transaction.rollback()
                     return HttpResponseServerError("Unable to move: " + e)
                 else:
-                    transaction.commit()
+                    #transaction.commit()
+                    commit_transaction = True
             else: 
-                transaction.commit()
+                #transaction.commit()
+                commit_transaction = True
             return simple.redirect_to(request,
                 url=reverse("sections:sections_index"), 
                 permanent=False
             )
     else:
         section_form = SectionForm()
+        commit_transaction = True
+        
+    if commit_transaction:
+        transaction.commit()
+    else:
+        transaction.rollback()
+    
     return simple.direct_to_template(request, 
         template = "scaffold/admin/add.html",
         extra_context = {
@@ -227,6 +239,7 @@ def move(request, section_id):
             'child': 'first-child'
         }
         if rel not in pos_map.keys():
+            transaction.rollback()
             return HttpResponseBadRequest(
                 "Position must be one of %s " % ", ".join(pos_map.keys())
             )
@@ -391,4 +404,16 @@ def _get_content_table(section, sort_key=None):
              relationship_type, 
              edit_url
         ))
-    return content_table   
+    return content_table
+
+def _get_user_link_html(request):
+    link_html = copy(app_settings.LINK_HTML)
+    app_label = Section._meta.app_label
+    Section._meta.get_add_permission()
+    add_perm = app_label + "." + Section._meta.get_add_permission()
+    del_perm = app_label + "." + Section._meta.get_delete_permission()
+    if not request.user.has_perm(add_perm):
+        del link_html['add_link']
+    if not request.user.has_perm(del_perm):
+        del link_html['del_link']
+    return link_html

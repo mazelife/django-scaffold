@@ -79,8 +79,8 @@ class BaseSection(MP_Node):
         should be sorted by their 'title' field. We would call our method 
         thusly:
        
-       >>> section = Section.objects.all()[0]
-       >>> section.get_related_content(sort_fields=['title', 'headline'])
+            section = Section.objects.all()[0]
+            section.get_related_content(sort_fields=['title', 'headline'])
         
         This will create a common sort key on all assciated objects based on    
         the first of these fields that are present on the object, then sort 
@@ -164,15 +164,15 @@ class BaseSection(MP_Node):
         For example, if you wanted to retrieve a list of all subsections and 
         associated articles only, you could do the following:
         
-        >>> section = Section.objects.all()[0]
-        >>> section.get_associated_content(only=['articles.article'])
+            section = Section.objects.all()[0]
+            section.get_associated_content(only=['articles.article'])
         
         Furthermore, if all objects have a commone sort key, you can specify 
         that with the sort_key parameter. So, since sections have an 'order' 
         field, if articles had that field as well, you could do the following:
         
-        >>> section = Section.objects.all()[0]
-        >>> section.get_associated_content(
+            section = Section.objects.all()[0]
+            section.get_associated_content(
                 only=['articles.article'], 
                 sort_key='order'
             )
