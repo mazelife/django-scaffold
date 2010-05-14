@@ -228,7 +228,7 @@ class SectionTest(TestCase):
         """Test the BaseSection model's get_associated_content method"""
         TestSection.load_bulk(BASE_DATA)  
         section = TestSection.objects.get(slug='2')
-        article = TestArticle(title='A Test Article', section=section)
+        article = TestArticle(title='1 Test Article', section=section)
         article.save()
         content = section.get_associated_content()  
         self.assertTrue(len(content) == 5)
@@ -238,5 +238,15 @@ class SectionTest(TestCase):
             self.assertTrue(s.slug in [s[0].slug for s in child_sections])
         child_articles = [s for s in content if s[2] == 'TestArticle']
         self.assertTrue(len(child_articles) == 1)
-        self.assertEqual(child_articles[0][0].title, 'A Test Article')
+        self.assertEqual(child_articles[0][0].title, '1 Test Article')
+        # Now test the get_associated_content with an "only" argument:
+        content = section.get_associated_content(only=["scaffold.TestArticle"])
+        self.assertTrue(len(content) == 1)
+        self.assertEqual(content[0][0].title, '1 Test Article')
+        # Now test the get_associated_content with a "sort_key" argument:
+        content = section.get_associated_content(sort_key='title')
+        self.assertEqual(
+            [c[0].title for c in content],
+            [u'1 Test Article', u'21', u'22', u'23', u'24']
+        )
         
