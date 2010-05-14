@@ -50,7 +50,7 @@ class BaseSection(MP_Node):
         sections tree. Will crawl from leaf to root, returning None if no 
         non-empty field is encountered.
         """
-        assert hashattr(self, field_name), "Field name does not exist."
+        assert hasattr(self, field_name), "Field name does not exist."
         node = self
         if getattr(node, field_name, None):
                 return getattr(node, field_name)

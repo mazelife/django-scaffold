@@ -24,7 +24,7 @@ BASE_DATA = [
     {'data':{'slug': '23', 'title': '23', 'description':'23'}, 'children':[
       {'data':{'slug': '231', 'title': '231', 'description':'231'}},
     ]},
-    {'data':{'slug': '24', 'title': '24', 'description':'24'}},
+    {'data':{'slug': '24', 'title': '24', 'description':''}},
   ]},
   {'data':{'slug': '3', 'title': '3', 'description':'3'}},
   {'data':{'slug': '4', 'title': '4', 'description':'4'}, 'children':[
@@ -34,12 +34,33 @@ BASE_DATA = [
 
 class TestSection(BaseSection):
     """ A model of a mock section object"""
-    description = models.CharField(max_length=255)
+    description = models.CharField(max_length=255, blank=True)
 
 class TestArticle(models.Model):
     """A mock object with an FK relationship to a section"""
     title = models.CharField(max_length=255)
     section = models.ForeignKey(TestSection)
+
+    def __unicode__(self):
+        return self.title
+
+class BaseSortedTestArticle(models.Model):
+    """A mock object with an FK relationship to a section"""
+    title = models.CharField(max_length=255)
+    section = models.ForeignKey(TestSection)
+    
+    class Meta:
+        ordering = ['title']
+        abstract = True
+
+    def __unicode__(self):
+        return self.title
+
+class SortedTestArticle(BaseSortedTestArticle):
+    pass
+
+class OtherSortedTestArticle(BaseSortedTestArticle):
+    pass
 
 class SectionTest(TestCase):
 
@@ -214,16 +235,40 @@ class SectionTest(TestCase):
         """Test the BaseSection model's get_related_content method"""
         TestSection.load_bulk(BASE_DATA)  
         section = TestSection.objects.get(slug='2')
-        article = TestArticle(title='A Test Article', section=section)
+        article = TestArticle(title='B Test Article', section=section)
         article.save()
         content = section.get_related_content()
         self.assertTrue(len(content) == 1)
         item, application, model_name, rel_type = content[0]
-        self.assertTrue(item.title == u'A Test Article')
+        self.assertTrue(item.title == u'B Test Article')
         self.assertTrue(application == 'scaffold')
         self.assertTrue(model_name == 'TestArticle')
         self.assertTrue(rel_type == 'foreign-key')
-
+        for title in ['A Test Article', 'Z Test Article']:
+            article = TestArticle(title=title, section=section)
+            article.save()
+        content = section.get_related_content(sort_fields=['title'])        
+        self.assertEqual(
+            [item[0].title for item in content],
+            [u'A Test Article', u'B Test Article', u'Z Test Article']
+        )
+        # Remove related content, create new content from two models so we
+        # can test infer_sort property:
+        for item in content:
+            item[0].delete()
+        for title in ['C', 'Y', 'J']:
+            article = SortedTestArticle(title=title, section=section)
+            article.save()
+        for title in ['A', 'D', 'Z']:
+            article = OtherSortedTestArticle(title=title, section=section)
+            article.save()
+        # get_related_content should shuffle content together in alpha order:
+        content = section.get_related_content(infer_sort=True)
+        self.assertEqual(
+             [item[0].title for item in content],
+             [u'A', u'C', u'D', u'J', u'Y', u'Z']
+         )
+    
     def test_model_get_associated_content(self):
         """Test the BaseSection model's get_associated_content method"""
         TestSection.load_bulk(BASE_DATA)  
@@ -249,4 +294,24 @@ class SectionTest(TestCase):
             [c[0].title for c in content],
             [u'1 Test Article', u'21', u'22', u'23', u'24']
         )
-        
+    
+    def test_model_get_subsections(self):
+        """Test the BaseSection model's get_subsections method"""
+        TestSection.load_bulk(BASE_DATA)
+        section = TestSection.objects.get(slug='2')
+        for sub_section in section.get_subsections():
+            self.assertTrue(sub_section.slug in ['21','22','23','24'])
+    
+    def test_model_get_first_populated_field(self):
+        """Test the BaseSection model's get_first_populated_field method"""        
+        TestSection.load_bulk(BASE_DATA)
+        section = TestSection.objects.get(slug='24')
+        self.assertEqual(
+            section.get_first_populated_field('description'),
+            '2'
+        )
+        section = TestSection.objects.get(slug='23')
+        self.assertEqual(
+            section.get_first_populated_field('description'),
+            '23'
+        )                
