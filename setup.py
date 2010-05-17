@@ -20,14 +20,14 @@ classifiers = [
 root_dir = os.path.dirname(__file__)
 if not root_dir:
     root_dir = '.'
-long_desc = open(root_dir + '/README').read()
+long_desc = open(root_dir + '/README.rst').read()
 
 setup(
     name='django-scaffold',
     version=version,
     url='http://github.com/mazelife/django-scaffold/',
     author='James Stevenson',
-    author_email='james.m.stevenson@gmail.com',
+    author_email='james.m.stevenson at gmail dot com',
     license='BSD License',
     packages=['scaffold'],
     package_dir={'scaffold': 'scaffold'},
