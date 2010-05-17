@@ -1,38 +1,42 @@
 from django.core.exceptions import MiddlewareNotUsed, ImproperlyConfigured
+from django.contrib.flatpages.views import flatpage
 from django.db.models.loading import AppCache
+from django.http import Http404
+from django.views.generic import simple
 
 from middleware import get_current_section, lookup_section_from_request
 import settings as app_settings 
 
-def section(request, section_path=None):
-    return None
+Section = app_settings.get_extending_model()
 
-def asection(request, section_path=None):
+def section(request, section_path=None):
     """
     A view of a section.
     """
     try:
-        current_section = get_current_section()
+        section = get_current_section()
     except MiddlewareNotUsed:
-        current_section = lookup_section_from_request(request)
-    section_url = current_section.get_absolute_url()
-    extra = section_url.split(request.path)[-1]
-    if extra == '':
+        section = lookup_section_from_request(request)
+    if section:
+        main_sections = Section.get_root_nodes()
         return simple.direct_to_template(request, 
             template = "scaffold/section.html",
             extra_context = {
-                'node': current_section
+                'section': section,
+                'main_sections': main_sections
             }
         )        
     else:
-        if app_settings.FORWARD_TO:
-            fwd_view = __import__(app_settings.FORWARD_TO)
-            return fwd_view(request, slug=extra)
         app_cache = AppCache()
         try:
-            app_cache.get('flatpages')
+            app_cache.get_app('flatpages')
+            try:
+                return flatpage(request, request.path_info)
+            except Http404:
+                pass
         except ImproperlyConfigured:
-            raise Http404, "Section does not exist."
+            pass
+        raise Http404, "Section does not exist."
         
 def bsection(request, section_path=None):
     # Normalize section path:
