@@ -11,7 +11,7 @@ also hang other content off of it.
 Requirements
 --------------
 
-*`django-treebeard <https://tabo.pe/projects/django-treebeard/>`_.
+* `django-treebeard <https://tabo.pe/projects/django-treebeard/>`_.
 
 
 Uses the following javascript libraries (included in project):
