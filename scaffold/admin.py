@@ -22,7 +22,7 @@ class SectionAdmin(admin.ModelAdmin):
     
     def get_urls(self):
         urls = super(SectionAdmin, self).get_urls()
-        return self.urlpatterns #+ urls
+        return self.urlpatterns
     
     def changelist_view(self, request):
         index_view = self.url_map['sections_index']
@@ -30,4 +30,4 @@ class SectionAdmin(admin.ModelAdmin):
     
     def add_view(self, request):
         from django.views.generic import simple
-        return simple.redirect_to(request, '../../') 
+        return simple.redirect_to(request, '../../')
