@@ -6,7 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 import settings as app_settings
 
 class SectionForm(forms.ModelForm):
-    """Form for working with Sections. Savig new sections is disabled."""
+    """Form for working with Sections. Saving new sections is disabled."""
         
     class Meta:
         model = app_settings.get_extending_model()
