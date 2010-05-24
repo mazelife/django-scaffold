@@ -11,10 +11,11 @@ also hang other content off of it.
 Requirements
 --------------
 
+* `Django <http://djangoproject.com>`_   (1.1.1)
 * `django-treebeard <https://tabo.pe/projects/django-treebeard/>`_.
 
 
-Uses the following javascript libraries (included in project):
+Django-scaffolding uses the following javascript libraries (these are included in project):
 
 * `jQuery <http://jquery.com>`_
 * `jQuery UI <http://jqueryui.com/>`_
