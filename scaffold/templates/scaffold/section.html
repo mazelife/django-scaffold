@@ -6,24 +6,24 @@
     <style type="text/css">
         #nav {width: 100%; clear:both;}
         #nav li { display: inline; margin: 0 10px; list-style-type: none;}
-        #nav li.active a { color: red;}
+        #nav li.active a, #sitemap li.active a { color: orange;}
+        #sitemap { border-top: 1px solid gray;}
     </style>
 </head>
 <body>
-
+    {%load sections%}
     <!-- NB: This template should be overridden in your app. 
         It's just here to show what you can do with sections 
         in terms of navigating through parent and child 
         sections. -->
         
-    {%with section.get_root as super%}
     <ul id="nav">
-    {%for nav in main_sections%}
-        <li{%ifequal super.slug nav.slug%} class="active"{%endifequal%}>
-            <a href="{{nav.get_absolute_url}}">{{nav.title}}</a>
-        </li>
-    {%endfor%}
-    {%endwith%}
+        {% get_root_sections with section as root_sections %}
+        {%for nav in root_sections%}
+            <li{%if nav.is_active%} class="active"{%endif%}>
+                <a href="{{nav.get_absolute_url}}">{{nav.title}}</a>
+            </li>
+        {%endfor%}
     </ul>
     <h1>{{section.title}}</h1>
     {%with section.get_parent as parent%}

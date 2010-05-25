@@ -137,8 +137,11 @@ def add_to(request, section_id):
                     #transaction.commit()
                     commit_transaction = True
             else: 
-                #transaction.commit()
                 commit_transaction = True
+            if commit_transaction:
+                transaction.commit()
+            else:
+                transaction.rollback()
             return simple.redirect_to(request,
                 url=reverse("sections:sections_index"), 
                 permanent=False

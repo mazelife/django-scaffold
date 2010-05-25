@@ -16,15 +16,12 @@ def section(request, section_path=None):
     try:
         section = get_current_section()
     except MiddlewareNotUsed:
+        print "Where's da middleware?"
         section = lookup_section_from_request(request)
     if section:
-        main_sections = Section.get_root_nodes()
         return simple.direct_to_template(request, 
             template = "scaffold/section.html",
-            extra_context = {
-                'section': section,
-                'main_sections': main_sections
-            }
+            extra_context = {'section': section}
         )        
     else:
         app_cache = AppCache()
