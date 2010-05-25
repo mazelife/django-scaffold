@@ -37,7 +37,6 @@ class SectionNode(template.Node):
                 setattr(section, 'is_active', is_active)
         context[self.as_varname] = root_sections
         return ''
-        
 
 @register.tag
 def get_root_sections(parser, token):
@@ -75,3 +74,53 @@ def get_root_sections(parser, token):
         section = tokens[2]
         varname = tokens[4]
     return SectionNode(section=section, as_varname=varname)
+
+class SectionDescendantNode(template.Node):
+    
+    def __init__(self, section_var, ancestor_var, varname):
+        self.section_var = template.Variable(section_var)
+        self.ancestor_var = template.Variable(ancestor_var)
+        self.varname = varname
+    
+    def _resolve_vars(self, context):
+        try:
+            section = self.section_var.resolve(context)
+            ancestor = self.ancestor_var.resolve(context)
+        except template.VariableDoesNotExist:
+            return (None, None,)
+        return (section, ancestor,)
+
+    def render(self, context):
+        section, ancestor = self._resolve_vars(context)
+        if not section or not ancestor:
+            context[self.varname] = None
+            return ''
+        result = section.is_descendant_of(ancestor) or \
+            section.pk == ancestor.pk
+        context[self.varname] = result
+        return ''
+    
+@register.tag
+def section_is_descendant(parser, token):
+    """
+    Syntax::
+
+        {% section_is_descendant [section] of [ancestor] as [varname]  %}
+
+    Example usage::
+
+        {% section_is_descendant mysubsection of rootsection as descends %}
+        
+    """
+    tokens = token.split_contents()
+    if tokens[2] != 'of' or tokens[4] != 'as' or len(tokens) != 6:
+        raise template.TemplateSyntaxError((
+            "Incorrect syntax for %r. Format is: {%% section_is_descendant "
+            "[section] of [ancestor] as [varname]  %%}"
+        ) % tokens[0])          
+    section_var = tokens[1]
+    ancestor_var = tokens[3]
+    varname = tokens[5]
+    return SectionDescendantNode(section_var, ancestor_var, varname)
+    
+    

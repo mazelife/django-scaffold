@@ -6,8 +6,8 @@
     <style type="text/css">
         #nav {width: 100%; clear:both;}
         #nav li { display: inline; margin: 0 10px; list-style-type: none;}
-        #nav li.active a, #sitemap li.active a { color: orange;}
-        #sitemap { border-top: 1px solid gray;}
+        #nav li.active a, #subnav  a.active { color: orange;}
+        #subnav { border-top: 1px solid gray;}
     </style>
 </head>
 <body>
@@ -26,6 +26,16 @@
         {%endfor%}
     </ul>
     <h1>{{section.title}}</h1>
+    {%with section.get_related_content as related_content%}
+    {%if related_content%}
+    <h2>Related Content</h2>
+    <ul>
+    {%for obj, app, model, rel in related_content%}
+        <li><a href="{{obj.get_absolute_url}}">{{obj.title}}</a></li>
+    {%endfor%}
+    </ul>
+    {%endif%}
+    {%endwith%}
     {%with section.get_parent as parent%}
     {%if parent%}<p>Parent is: <a href="{{parent.get_absolute_url}}">{{parent.title}}</a>.</p>{%endif%}
     {%endwith%}
@@ -37,5 +47,23 @@
     {%endfor%}</ul>
     {%endif%}
     {%endwith%}
+
+
+    <ul id="subnav">
+        {% get_root_sections with section as root_sections %}
+        {%for nav in root_sections%}
+            <li{%if nav.is_active%} class="active"{%endif%}>
+                <a href="{{nav.get_absolute_url}}">{{nav.title}}</a>
+                {%with nav.get_children as subnav_items%}
+                {%if subnav_items%}<ul>
+                {%for subnav in nav.get_children%}
+                    {%section_is_descendant section of subnav as subnav_active%}
+                    <li><a{%if subnav_active%} class="active"{%endif%} href="{{subnav.get_absolute_url}}">{{subnav.title}}</a></li>
+                {%endfor%}
+                </ul>{%endif%}
+                {%endwith%}
+            </li>
+        {%endfor%}
+    </ul>
 </body>
 </html>
