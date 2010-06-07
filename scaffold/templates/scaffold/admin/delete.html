@@ -29,7 +29,7 @@
         <li>{{subsection.title}}</li>
     {%endfor%}
     </ul>
-    <p>If you delete this {{section.type}}, the {{descendants|length|pluralize:"other,others"}} will be deleted as well!</p>
+    <p>If you delete the {{section.type}} "{{section.title}}", {{descendants|length|pluralize:"this subsection,these subsections"}} will be deleted as well!</p>
 </div>
 {%endwith%}
 {%endif%}
