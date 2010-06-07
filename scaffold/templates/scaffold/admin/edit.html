@@ -41,7 +41,7 @@
         </tr>
     </thead>
     <tbody>
-    {%for item, date, app, model, relationship_type in related_content%}
+    {%for item, date, app, model, relationship_type, edit_url in related_content%}
         <tr>
             <td><a href="{{item.get_absolute_url}}">
                 {%if item.title%}{{item.title}}{%else%}{%if item.headline%}{{item.headline}}{%else%}{{item}}{%endif%}{%endif%}
