@@ -108,7 +108,7 @@ def add_to(request, section_id):
                 section = parent.add_child(**section_kwargs)
             else:
                 section = Section.add_root(**section_kwargs)         
-            # Now position node if necessary:
+            # Position node if necessary.
             if request.POST.get('position') and request.POST.get('child'):
                 node = Section.objects.get(
                     slug=section_form.cleaned_data['slug']
@@ -134,11 +134,14 @@ def add_to(request, section_id):
                     transaction.rollback()
                     return HttpResponseServerError("Unable to move: " + e)
                 else:
-                    #transaction.commit()
                     commit_transaction = True
             else: 
                 commit_transaction = True
             if commit_transaction:
+                # Log that a section has been successfully added before
+                # committing transaction.
+                section_admin = site._registry[Section]
+                section_admin.log_addition(request, node)
                 transaction.commit()
             else:
                 transaction.rollback()
@@ -154,7 +157,6 @@ def add_to(request, section_id):
         transaction.commit()
     else:
         transaction.rollback()
-    
     return simple.direct_to_template(request, 
         template = "scaffold/admin/add.html",
         extra_context = {
@@ -171,8 +173,13 @@ def delete(request, section_id):
     This view allows the user to delete Sections within the node tree.
     """
     section = get_object_or_404(Section, pk=section_id)
+    section_repr = section.title
     if request.method == 'POST':
         section.delete()
+        # Log that a section has been successfully deleted.
+        section_admin = site._registry[Section]
+        section_admin.log_deletion(request, section, section_repr)
+        # Redirect to sections index page.
         return simple.redirect_to(request,
             url=reverse("sections:sections_index"), 
             permanent=False
@@ -199,6 +206,14 @@ def edit(request, section_id):
         )
         if section_form.is_valid():
             section = section_form.save()
+            # Log that a section has been successfully edited.
+            section_admin = site._registry[Section]
+            section_admin.log_change(
+                request, 
+                section, 
+                "%s edited." % section.title
+            )
+            # Redirect to sections index page.
             return simple.redirect_to(request,
                 url=reverse("sections:sections_index"), 
                 permanent=False
@@ -255,16 +270,24 @@ def move(request, section_id):
             if Section.find_problems()[4] != []:
                 Section.fix_tree()
             transaction.commit()
+            # Log that a section has been successfully moved.
+            section_admin = site._registry[Section]
+            section_admin.log_change(
+                request, 
+                section, 
+                "%s moved." % section.title
+            )
+            # Redirect to sections index page.
             return simple.redirect_to(request,
                 url=reverse("sections:sections_index"), 
                 permanent=False
             )
-    # Exclude the node from the list of candidates:
+    # Exclude the node from the list of candidates...
     other_secs = Section.objects.exclude(pk=section_id)
-    # ...then exclude descendants of the node being moved:
+    # ...then exclude descendants of the node being moved.
     other_secs = [n for n in other_secs if not n.is_descendant_of(section)]
     
-    # Provides a sections tree for user reference: 
+    # Provides a sections tree for user reference.
     def crawl(node):
         html_class = node.pk == section.pk and ' class="active"' or ""
         if node.is_leaf():
@@ -316,7 +339,7 @@ def related_content(request, section_id, list_per_page=10):
         page = int(request.GET.get('page', '1'))
     except ValueError:
         page = 1
-    # If page request is out of range, deliver last page of results:
+    # If page request is out of range, deliver last page of results.
     try:
         content_table = paginated_content.page(page)
     except (EmptyPage, InvalidPage):
@@ -358,6 +381,14 @@ def order_all_content(request, section_id):
                     "Item order was not specified for every item, or the "
                     "order provided was not a number."
                 ))
+        # Log that a section has been successfully edited.
+        section_admin = site._registry[Section]
+        section_admin.log_change(
+            request, 
+            section, 
+            "Content for %s reordered ." % section.title
+        )
+        # Redirect to sections index page.     
         return simple.redirect_to(request,
             url=reverse("sections:edit", kwargs={'section_id': section.id}), 
             permanent=False
