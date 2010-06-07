@@ -460,7 +460,7 @@ def _get_admin_site():
     """
     A utility function for getting the ModelAdmin instance for sections.
     Note that, if being run under the test runner, the ModelAdmin won't be
-    available, in which case this function returns None. 
+    available, in which case this function returns None.
     """
     if site._registry.has_key(Section):
         return site._registry[Section]
