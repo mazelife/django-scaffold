@@ -57,7 +57,7 @@ def get_current_section():
 def lookup_section_from_request(request):
     path_map = _get_section_path_map()
     section_paths = path_map.keys()
-    # Sort by shortest path to longest:
+    # Sort by shortest path to longest.
     section_paths.sort(lambda x, y: len(x) <= len(y) and 1 or -1)
     matches = [p for p in section_paths if request.path.startswith(p)]
     if len(matches) >= 1:

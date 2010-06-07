@@ -142,7 +142,7 @@ class SectionTest(TestCase):
         url = reverse("sections:add", kwargs={'section_id': test_section.id})
         response = self.client.get(url)
         self.assertContains(response, test_section.title)
-        # Create a new section via the form and verify it exists:
+        # Create a new section via the form and verify it exists.
         response = self.client.post(url, {
             'slug': 'foobar',
             'title': 'Foo Bar',
@@ -150,28 +150,28 @@ class SectionTest(TestCase):
             'position': 'after',
             'child': '4'
         })
-        # On sucess should ask about positioning:
+        # On sucess should redirect.
         self.assertRedirects(response, reverse("sections:sections_index"))
-        # New section exists and is child of the "2" section:
+        # Verify new section exists and is child of the "2" section...
         self.assertTrue(len(TestSection.objects.filter(title="Foo Bar")) == 1)
         foobar = TestSection.objects.get(slug="foobar")
         self.assertEqual(foobar.get_parent(), test_section)
-        # ...And make sure it was positioned correctly:
+        # ...and make sure it was positioned correctly.
         self.assertEqual(test_section.get_children()[2].pk, foobar.pk)        
-        # Now move the section:  
+        # Now move the section.
         url = reverse("sections:move", kwargs={'section_id': foobar.id})
         response = self.client.post(url, {
             'relationship': 'child', 
             'to': TestSection.objects.get(slug="4").id
         })
-        # On sucess should redirect to index:
+        # On sucess should redirect to index.
         self.assertRedirects(response, reverse("sections:sections_index"))
-        # Section moved where it was supposed to:
+        # Verify section moved where it was supposed to.
         self.assertEqual(
             TestSection.objects.get(slug="foobar").get_parent(),
             TestSection.objects.get(slug="4")
         )
-        #Move it to root of tree:
+        # Move section to root of tree.
         response = self.client.post(url, {
             'relationship': 'neighbor', 
             'to': 'TOP'
@@ -180,13 +180,13 @@ class SectionTest(TestCase):
             TestSection.get_root_nodes()[0].slug,
             foobar.slug
         )
-        # Move it one more time:
+        # Move it one more time.
         response = self.client.post(url, {
             'relationship': 'neighbor', 
             'to': TestSection.objects.get(slug="231").id
         })        
         self.assertRedirects(response, reverse("sections:sections_index"))
-        # Section moved where it was supposed to:
+        # Verify section moved where it was supposed to.
         self.assertEqual(
             [u'231', u'foobar'],
             [n.slug for n in TestSection.objects.get(slug="23").get_children()]
@@ -201,14 +201,14 @@ class SectionTest(TestCase):
             kwargs={'section_id': test_section.id}
         )
         response = self.client.get(url)
-        # Make sure we get a confirmation page that mentions child sections:
+        # Make sure we get a confirmation page that mentions child sections.
         self.assertContains(response, test_section.title)
         for child in test_section.get_children():
             self.assertContains(response, child.title)
         response = self.client.post(url)
-        # Delete operation redirects to index:
+        # Delete operation redirects to index.
         self.assertRedirects(response, reverse("sections:sections_index"))
-        # Section and it's children are gone:
+        # Section and it's children are gone.
         self.assertTrue(len(TestSection.objects.filter(title="2")) == 0)
 
     def test_admin_section_edit(self):
@@ -224,7 +224,7 @@ class SectionTest(TestCase):
             'title': 'Forty One B',
             'description': 'Description tktk.'
         })
-        # Edit operation redirects to index:
+        # Verify edit operation redirects to index.
         self.assertRedirects(response, reverse("sections:sections_index")) 
         # New data is there:
         edited_section = TestSection.objects.get(slug="41b")
@@ -253,7 +253,7 @@ class SectionTest(TestCase):
             [u'A Test Article', u'B Test Article', u'Z Test Article']
         )
         # Remove related content, create new content from two models so we
-        # can test infer_sort property:
+        # can test infer_sort property.
         for item in content:
             item[0].delete()
         for title in ['C', 'Y', 'J']:
@@ -262,7 +262,8 @@ class SectionTest(TestCase):
         for title in ['A', 'D', 'Z']:
             article = OtherSortedTestArticle(title=title, section=section)
             article.save()
-        # get_related_content should shuffle content together in alpha order:
+        # Verify that get_related_content shuffles content together in alpha    
+        # order.
         content = section.get_related_content(infer_sort=True)
         self.assertEqual(
              [item[0].title for item in content],
@@ -284,11 +285,11 @@ class SectionTest(TestCase):
         child_articles = [s for s in content if s[2] == 'TestArticle']
         self.assertTrue(len(child_articles) == 1)
         self.assertEqual(child_articles[0][0].title, '1 Test Article')
-        # Now test the get_associated_content with an "only" argument:
+        # Test the get_associated_content with an "only" argument.
         content = section.get_associated_content(only=["scaffold.TestArticle"])
         self.assertTrue(len(content) == 1)
         self.assertEqual(content[0][0].title, '1 Test Article')
-        # Now test the get_associated_content with a "sort_key" argument:
+        # Test the get_associated_content with a "sort_key" argument.
         content = section.get_associated_content(sort_key='title')
         self.assertEqual(
             [c[0].title for c in content],

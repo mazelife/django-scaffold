@@ -99,17 +99,17 @@ class BaseSection(MP_Node):
             sort_fields = set()
         for rel in self._meta.get_all_related_objects():
             for fk_item in getattr(self, rel.get_accessor_name()).all():
-                # If this is a generic relation, fetch content object:
+                # If this is a generic relation, fetch content object.
                 if hasattr(fk_item, 'content_object'):
                     fk_item = fk_item.content_object    
                     relationship_type = 'generic-foreign-key'
                 else:
                     relationship_type = 'foreign-key'
-                # In the weird edge-case where an item is related to a Section
-                # Node in more than one way, we only want the item to appear in
+                # In the weird edge-case where an item is related to a section
+                # in more than one way, we only want the item to appear in
                 # this list once. Therefore, we ID items by app, model and pk 
                 # and verify we haven't already seen that ID before adding the 
-                # item to our list:
+                # item to our list.
                 object_id = "%s/%s/%s" % (
                     fk_item._meta.app_label,
                     fk_item._meta.object_name,
@@ -211,9 +211,10 @@ class BaseSection(MP_Node):
                     model,
                     'subsection'
                 ))
-        # Now shuffle them together:
+
         def sort_list(x, y):
             return cmp(getattr(x[0],sort_key),getattr(y[0],sort_key))
+
         if sort_key:
             associated_content.sort(cmp=sort_list)
         return associated_content
