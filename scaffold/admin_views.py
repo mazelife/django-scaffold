@@ -141,8 +141,8 @@ def add_to(request, section_id):
             if commit_transaction:
                 # Log that a section has been successfully added before
                 # committing transaction.
-                section_admin = site._registry[Section]
-                section_admin.log_addition(request, node)
+                sections_admin = _get_admin_site()
+                sections_admin and sections_admin.log_addition(request, node)
                 transaction.commit()
             else:
                 transaction.rollback()
@@ -178,8 +178,9 @@ def delete(request, section_id):
     if request.method == 'POST':
         section.delete()
         # Log that a section has been successfully deleted.
-        section_admin = site._registry[Section]
-        section_admin.log_deletion(request, section, section_repr)
+        sections_admin = _get_admin_site()
+        sections_admin and \
+            sections_admin.log_deletion(request, section, section_repr)
         # Redirect to sections index page.
         return simple.redirect_to(request,
             url=reverse("sections:sections_index"), 
@@ -208,8 +209,8 @@ def edit(request, section_id):
         if section_form.is_valid():
             section = section_form.save()
             # Log that a section has been successfully edited.
-            section_admin = site._registry[Section]
-            section_admin.log_change(
+            sections_admin = _get_admin_site()
+            sections_admin and sections_admin.log_change(
                 request, 
                 section, 
                 "%s edited." % section.title
@@ -274,8 +275,8 @@ def move(request, section_id):
                 Section.fix_tree()
             transaction.commit()
             # Log that a section has been successfully moved.
-            section_admin = site._registry[Section]
-            section_admin.log_change(
+            sections_admin = _get_admin_site()
+            sections_admin and sections_admin.log_change(
                 request, 
                 section, 
                 "%s moved." % section.title
@@ -454,3 +455,13 @@ def _get_user_link_html(request):
     if not request.user.has_perm(del_perm):
         del link_html['del_link']
     return link_html
+
+def _get_admin_site():
+    """
+    A utility function for getting the ModelAdmin instance for sections.
+    Note that, if being run under the test runner, the ModelAdmin won't be
+    available, in which case this function returns None. 
+    """
+    if site._registry.has_key(Section):
+        return site._registry[Section]
+    return None
