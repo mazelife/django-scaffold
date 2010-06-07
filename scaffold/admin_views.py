@@ -72,7 +72,7 @@ def index(request):
     if link_html.has_key('add_link'):        
         node_list_html += (
             '<li><a class="addlink" href="add-to/root/">'
-            'Add a top-level section</a></li>'
+            'Add a top-level section.</a></li>'
         )
     node_list_html += "</ul>"
     return simple.direct_to_template(request, 
