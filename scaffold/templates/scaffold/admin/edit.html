@@ -12,7 +12,14 @@
       {% trans "Edit" %} {{section.type}} <em>{{section.title}}</em>
 </div>
 {% endblock %}
+???
+
 {% block content %}
+{% block object-tools %}
+<ul class="object-tools">
+        <li><a href="../../../../r/{{ content_type_id }}/{{ section.pk }}/" class="viewsitelink">{% trans "View on site" %}</a></li>
+</ul>
+{%endblock%}
 <div id="content-main">
     {%ifnotequal section.depth 1%}
     <p class="note">You are editing a subsection.</p>

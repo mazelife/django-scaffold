@@ -4,6 +4,7 @@ from functools import partial
 
 from django.contrib.auth.decorators import permission_required
 from django.contrib.admin import site
+from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db import transaction
@@ -220,10 +221,12 @@ def edit(request, section_id):
             )         
     else:
         section_form = SectionForm(instance=section)           
+    content_type_id = ContentType.objects.get_for_model(Section).id
     return simple.direct_to_template(request, 
         template = "scaffold/admin/edit.html",
         extra_context = {
-            'section': section, 
+            'section': section,
+            'content_type_id': content_type_id,
             'form': section_form,
             'title': "Edit %s '%s'" % (section.type, section.title),
             'related_content': _get_content_table(section, 
