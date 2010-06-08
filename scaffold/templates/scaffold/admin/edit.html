@@ -26,17 +26,19 @@
     {%else%}
     <p class="note">You are editing a section.</p>
     {%endifnotequal%}
-    <form enctype="multipart/form-data" action="{%url sections:edit section_id=section.pk%}" method="POST">
-    <table>
-    {{ form.as_table }}
-    </table>
-    <div class="submit-row">
-    <a class="button left" href="{%url sections:move section_id=section.pk%}">Move this {%ifnotequal section.depth 1%}subsection{%else%}section{%endifnotequal%} &raquo;</a>
-    {%if allow_associated_ordering%}
-    <a class="button left" href="{%url sections:order section_id=section.pk%}">Order this {%ifnotequal section.depth 1%}subsection{%else%}section{%endifnotequal%}'s content &raquo;</a>
-    {%endif%}
-    <input type="submit" name="_save" class="default" value="Save">
-    </div>
+    <form enctype="multipart/form-data" action="{%url sections:edit section_id=section.pk%}" method="post">    
+        <fieldset class="module aligned">
+        {% for field in form %}
+            {% include "scaffold/admin/includes/field.html" %}
+        {% endfor %}
+        </fieldset>
+        <div class="submit-row">
+        <a class="button left" href="{%url sections:move section_id=section.pk%}">Move this {%ifnotequal section.depth 1%}subsection{%else%}section{%endifnotequal%} &raquo;</a>
+        {%if allow_associated_ordering%}
+        <a class="button left" href="{%url sections:order section_id=section.pk%}">Order this {%ifnotequal section.depth 1%}subsection{%else%}section{%endifnotequal%}'s content &raquo;</a>
+        {%endif%}
+        <input type="submit" name="_save" class="default" value="Save">
+        </div>
     </form>
     <h2>Items Belonging to this {{section.type}}</h2>
     <table class="related-content">

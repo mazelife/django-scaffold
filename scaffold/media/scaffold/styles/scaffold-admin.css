@@ -4,8 +4,6 @@ label {
     width: 89px;
 }
 
-form p { margin-bottom: 25px; }
-
 fieldset.position-node {
     margin: 10px 0 20px 0;
     padding: 10px;
@@ -25,6 +23,7 @@ fieldset.position-node * {
     padding:3px;
     margin-right: 10px;
 }
+.form-row.last { border-bottom: 0px;}
 
 #image-preview {
     margin-left: 600px;
