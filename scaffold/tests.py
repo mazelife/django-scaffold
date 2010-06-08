@@ -6,6 +6,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
 from django.db import models, transaction
 from django.db.models.loading import cache
+from django.template import Context, Template
 from django.test import TestCase
 
 from models import BaseSection
@@ -315,4 +316,31 @@ class SectionTest(TestCase):
         self.assertEqual(
             section.get_first_populated_field('description'),
             '23'
-        )                
+        )
+
+    def test_templatetag_get_root_sections(self):
+        """Test that the get_root_sections template tag works as expected."""        
+        TestSection.load_bulk(BASE_DATA)
+        # A little patching to make sure that get_extending_model() returns
+        # TestSection.
+        from scaffold import settings as app_settings
+        def get_test_model():
+            return TestSection
+        app_settings.get_extending_model = get_test_model
+        
+        template = Template("""{%load sections%}
+        <ul>{% get_root_sections as root_sections %}
+        {{root_sections|pprint}}
+        {%for nav in root_sections%}
+            <li{%if nav.is_active%} class="active"{%endif%}>
+                <a href="{{nav.get_absolute_url}}">{{nav.title}}</a>
+            </li>
+        {%endfor%}
+        </ul>    
+        """)
+        
+        context = Context({'subsection': TestSection.objects.get(slug='231')})
+        result = template.render(context)
+        for root in TestSection.get_root_nodes():
+            self.assertTrue(root.title in result)
+        
