@@ -25,6 +25,8 @@ class SectionNode(template.Node):
                 current_section = current_section.resolve(context)
             except template.VariableDoesNotExist:
                 current_section = None
+        else:
+            current_section = None
         return current_section
 
     def render(self, context):
@@ -65,6 +67,7 @@ def get_root_sections(parser, token):
         )
     if tokens[1] == 'as': # get_root_sections as [varname]
         varname = tokens[2]
+        section = None
         slug = None
     else: # get_root_sections with [section slug] as [varname]
         if tokens[3] != 'as':
