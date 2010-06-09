@@ -4,7 +4,6 @@
     {{ block.super }}
     <link rel="stylesheet" href="{{MEDIA_URL}}scaffold/styles/scaffold-admin.css" type="text/css" media="screen"/>
     <link rel="stylesheet" href="{{MEDIA_URL}}scaffold/styles/jquery.ui.start/jquery.ui.css" type="text/css">   
-    {{section_form.media}}
 {%endblock%}
 {%block breadcrumbs%}
 <div class="breadcrumbs">
@@ -23,13 +22,9 @@
 {%else%}
 <form enctype="multipart/form-data" action="{%url sections:add section_id='root'%}" method="post">
 {%endif%}
-    <fieldset class="module aligned">
-    {%with section_form as form%}
-    {% for field in form %}
-        {% include "scaffold/admin/includes/field.html" %}
+    {% for fieldset in form %}
+        {% include "scaffold/admin/includes/fieldset.html" %}
     {% endfor %}
-    {%endwith%}
-    </fieldset>
     {%if parent.has_children%}
     {%with parent.get_children as children%}
     <fieldset class="position-node ui-state-highlight ui-corner-all">

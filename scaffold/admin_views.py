@@ -4,6 +4,7 @@ from functools import partial
 
 from django.contrib.auth.decorators import permission_required
 from django.contrib.admin import site
+from django.contrib.admin  import helpers
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse, NoReverseMatch
@@ -99,6 +100,7 @@ def add_to(request, section_id):
     else:
         parent = Section.objects.get(pk=section_id)
         setattr(parent, 'has_children', len(parent.get_children()) > 0)
+    sections_admin = _get_admin_site()
     if request.method == 'POST':
         section_form = SectionForm(request.POST, request.FILES)
         if section_form.is_valid():
@@ -141,7 +143,6 @@ def add_to(request, section_id):
             if commit_transaction:
                 # Log that a section has been successfully added before
                 # committing transaction.
-                sections_admin = _get_admin_site()
                 sections_admin and sections_admin.log_addition(request, node)
                 transaction.commit()
             else:
@@ -152,6 +153,7 @@ def add_to(request, section_id):
             )
     else:
         section_form = SectionForm()
+        section_admin_form, media = _get_admin_form_and_media(section_form, request)
         commit_transaction = True
         
     if commit_transaction:
@@ -162,7 +164,8 @@ def add_to(request, section_id):
         template = "scaffold/admin/add.html",
         extra_context = {
             'parent': parent,
-            'section_form': section_form,
+            'form': section_admin_form or section_form,
+            'media': media,
             'title': "New %s" % (parent and "subsection" or "section")
         }
     )
@@ -202,6 +205,7 @@ def edit(request, section_id):
     """
     section = get_object_or_404(Section, pk=section_id)
     rel_sort_key = allow_associated_ordering and 'order' or None
+    sections_admin = _get_admin_site()
     if request.method == 'POST':
         section_form = SectionForm(request.POST, request.FILES,
             instance=section
@@ -209,7 +213,6 @@ def edit(request, section_id):
         if section_form.is_valid():
             section = section_form.save()
             # Log that a section has been successfully edited.
-            sections_admin = _get_admin_site()
             sections_admin and sections_admin.log_change(
                 request, 
                 section, 
@@ -221,7 +224,8 @@ def edit(request, section_id):
                 permanent=False
             )         
     else:
-        section_form = SectionForm(instance=section)           
+        section_form = SectionForm(instance=section)
+        section_form, media = _get_admin_form_and_media(section_form, request)
     content_type_id = ContentType.objects.get_for_model(Section).id
     return simple.direct_to_template(request, 
         template = "scaffold/admin/edit.html",
@@ -229,6 +233,7 @@ def edit(request, section_id):
             'section': section,
             'content_type_id': content_type_id,
             'form': section_form,
+            'media': media,
             'title': "Edit %s '%s'" % (section.type, section.title),
             'related_content': _get_content_table(section, 
                 sort_key=rel_sort_key
@@ -459,9 +464,26 @@ def _get_user_link_html(request):
 def _get_admin_site():
     """
     A utility function for getting the ModelAdmin instance for sections.
-    Note that, if being run under the test runner, the ModelAdmin won't be
-    available, in which case this function returns None.
     """
     if site._registry.has_key(Section):
         return site._registry[Section]
     return None
+
+def _get_admin_form_and_media(model_form, request):
+    """
+    A utility function that wraps django.contrib.admin.helpers.AdminForm,
+    allowing things like the fieldsets property of the admin.ModelAdmin
+    class to work.
+    """
+    admin_site = _get_admin_site()
+    if not admin_site:
+        return (model_form, model_form.media,)
+    if not admin_site.exclude:
+        admin_site.exclude = tuple()
+    admin_site.exclude += model_form._meta.exclude
+    admin_form = helpers.AdminForm(model_form, 
+        list(admin_site.get_fieldsets(request)), 
+        admin_site.prepopulated_fields
+    )
+    media = admin_form.media + admin_site.media
+    return (admin_form, media,)

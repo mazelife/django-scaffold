@@ -33,9 +33,14 @@ BASE_DATA = [
   ]},
 ]
 
+
+
 class TestSection(BaseSection):
     """ A model of a mock section object"""
     description = models.CharField(max_length=255, blank=True)
+
+from admin import SectionAdmin
+admin.site.register(TestSection, SectionAdmin)
 
 class TestArticle(models.Model):
     """A mock object with an FK relationship to a section"""
@@ -327,7 +332,6 @@ class SectionTest(TestCase):
         def get_test_model():
             return TestSection
         app_settings.get_extending_model = get_test_model
-        
         template = Template("""{%load sections%}
         <ul>{% get_root_sections as root_sections %}
         {{root_sections|pprint}}
