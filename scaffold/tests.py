@@ -104,7 +104,7 @@ class SectionTest(TestCase):
             )
         # Install admin:
         admin_patterns = patterns(
-            (r'^admin/sections/section/', include('scaffold.admin_urls',
+            (r'^admin/sections/section/', include('scaffold.admin_urls', 
                 namespace="sections"
             )),
             (r'^admin/', include(admin.site.urls)),
@@ -125,7 +125,7 @@ class SectionTest(TestCase):
         )
         
     def _log_test_client_out(self):
-        """Log the test client out using the test runner user"""
+        """Log the test client out using the test runner user"""    
         self.client.logout()
             
     def login_and_load(self):
@@ -134,7 +134,7 @@ class SectionTest(TestCase):
         if not self.csrf_disabled:
             self._disable_csrf_middleware()
         res = self._log_test_client_in()
-        TestSection.load_bulk(BASE_DATA)
+        TestSection.load_bulk(BASE_DATA)            
         import admin_views
         admin_views.Section = TestSection # Monkey patch!
     
@@ -145,7 +145,7 @@ class SectionTest(TestCase):
         url = TestSection.objects.get(slug='231').get_absolute_url()
         result = self.client.get(url)
         self.assertEqual(result.status_code, 200)
-    
+        
     def test_admin_index(self):
         """
         Verify that each section in the section tree can be found on the admin 
@@ -407,7 +407,7 @@ class SectionTest(TestCase):
         )
 
     def test_templatetag_get_root_sections(self):
-        """Test that the get_root_sections template tag works as expected."""
+        """Test that the get_root_sections template tag works as expected."""        
         TestSection.load_bulk(BASE_DATA)
         self._patch_get_extending_model()
         # Test basic version of template tag.
