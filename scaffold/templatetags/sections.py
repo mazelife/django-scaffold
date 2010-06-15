@@ -9,10 +9,7 @@ class SectionNode(template.Node):
 
     def __init__(self, section=None, as_varname=None):
         self.as_varname = as_varname
-        try:
-            self.current_section = section
-        except Section.DoesNotExist:
-            self.current_section = None
+        self.current_section = section
 
     def _resolve_section(self, context):
         """
