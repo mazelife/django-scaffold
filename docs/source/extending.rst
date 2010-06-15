@@ -71,3 +71,17 @@ Like almost everything about scaffold, you are not required to use this pattern.
 .. admonition:: Note
 
     The positioning of the url patterns here is very deliberate. The regular         expression '^(?P<section_path>.+)/$' is rather  greedy and will match anything, therefore we put it last. Conversely, the regular expression '^admin/sections/section/' is more specific than the '^admin/' expression, so we place it first to ensure that it overrides the standard admin pages for our app.
+
+4. Register your Section model in the admin site
+----------------------------------------------------
+
+Create an admin.py file in your concrete application and register `your``Section` new model there::
+
+    from django.contrib import admin
+    from models import Section
+    from scaffold.admin import SectionAdmin
+
+    admin.site.register(Section, SectionAdmin)
+
+
+5. Add the necessary project settings
