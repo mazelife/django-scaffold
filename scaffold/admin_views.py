@@ -28,20 +28,11 @@ def index(request):
     Display a tree of section and subsection nodes.
     Because of the impossibility of expressing needed concepts (like recursion) 
     within the django template syntax, the tree html (nested <ul> elements) is
-    constructed manually in this view using the get_rendered_tree and crawl
-    functions.
+    constructed manually in this view using the crawl function.
     """
     roots = Section.get_root_nodes()
     link_html = _get_user_link_html(request)
     node_list_html = '<ul id="node-list" class="treeview-red">'
-
-    def get_rendered_tree(root_nodes, admin_links=[], html_class=None):
-        html_class = html_class and 'class="%s"' % html_class or ""
-        tree_html = "<ul%s>%s</ul>" % (
-            html_class,
-            "".join(map(crawl, root_nodes))        
-        )
-        return tree_html
 
     def crawl(node, admin_links=[]):
         link_list =  " " + " | ".join(
@@ -113,7 +104,7 @@ def add_to(request, section_id):
                 section = Section.add_root(**section_kwargs)         
             # Position node if necessary.
             if request.POST.get('position') and request.POST.get('child'):
-                node = Section.objects.get(
+                section = Section.objects.get(
                     slug=section_form.cleaned_data['slug']
                 )
                 rel_to = get_object_or_404(Section, 
@@ -132,7 +123,7 @@ def add_to(request, section_id):
                         positions
                     )) 
                 try:
-                    node.move(rel_to, pos_map[rel])
+                    section.move(rel_to, pos_map[rel])
                 except Exception, e:
                     transaction.rollback()
                     return HttpResponseServerError("Unable to move: " + e)
@@ -143,7 +134,8 @@ def add_to(request, section_id):
             if commit_transaction:
                 # Log that a section has been successfully added before
                 # committing transaction.
-                sections_admin and sections_admin.log_addition(request, node)
+                sections_admin \
+                    and sections_admin.log_addition(request, section)
                 transaction.commit()
             else:
                 transaction.rollback()
@@ -153,7 +145,10 @@ def add_to(request, section_id):
             )
     else:
         section_form = SectionForm()
-        section_admin_form, media = _get_admin_form_and_media(section_form, request)
+        section_admin_form, media = _get_admin_form_and_media(
+            section_form, 
+            request
+        )
         commit_transaction = True
         
     if commit_transaction:
