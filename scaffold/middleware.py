@@ -4,7 +4,7 @@ from django.core.exceptions import MiddlewareNotUsed
 from django.db.models.signals import post_save, post_delete
 
 import settings as app_settings
-Section = app_settings.get_extending_model()
+
 
 # Import and work-around for python < 2.4
 try:
@@ -19,6 +19,7 @@ def _build_section_path_map():
     a list of all section urls using the low-level caching framework.
     """
     paths = {}
+    Section = app_settings.get_extending_model()
     for section in Section.objects.all():
         paths[section.get_absolute_url()] = section.slug
     cache.set(app_settings.PATH_CACHE_KEY, paths, app_settings.PATH_CACHE_TTL) 
@@ -55,6 +56,7 @@ def get_current_section():
     return getattr(_thread_locals, 'section', None)
 
 def lookup_section_from_request(request):
+    Section = app_settings.get_extending_model()
     path_map = _get_section_path_map()
     section_paths = path_map.keys()
     # Sort by shortest path to longest.
@@ -84,10 +86,10 @@ def reset_section_path_map(sender, **kwargs):
 # Signals#Helppost_saveseemstobeemittedtwiceforeachsave
 # for an explanation of why dispatch_uid is needed.
 post_save.connect(reset_section_path_map, 
-    sender=Section, 
+    sender=app_settings.get_extending_model(), 
     dispatch_uid="paths-reset"
 )
 post_delete.connect(reset_section_path_map, 
-    sender=Section, 
+    sender=app_settings.get_extending_model(), 
     dispatch_uid="paths-reset"
 )
