@@ -12,7 +12,7 @@ Contents:
    
    Installing scaffold <installation>
    Creating the extending application <extending>
-   Available settings <settings>
+   Available settings <settings.rst>
 
 
 Indices and tables
