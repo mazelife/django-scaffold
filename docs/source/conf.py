@@ -18,6 +18,18 @@ import sys, os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.append(os.path.abspath('.'))
 
+code_path = os.path.abspath(os.path.join(os.path.abspath('.'), '../../'))
+
+if not os.path.exists(code_path):
+    print "WARNING: Autodoc is busted."
+sys.path.append(code_path)
+
+sys.path.append('/Users/jstevenson/src/sectest_env/lib/python2.5/site-packages')
+import pdb; pdb.set_trace()
+#import settings
+#from django.core.management import setup_environ
+#setup_environ(settings)
+
 # -- General configuration -----------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be extensions

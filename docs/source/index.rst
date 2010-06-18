@@ -11,9 +11,9 @@ Contents:
    :maxdepth: 2
    
    Installing scaffold <installation>
-   Creating the extending application <extending>
+   Creating an application that uses scaffold <extending>
+   Customizing scaffold <customizing>
    Available settings <settings.rst>
-
 
 Indices and tables
 ==================
