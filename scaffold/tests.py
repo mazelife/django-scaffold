@@ -75,10 +75,10 @@ class SectionTest(TestCase):
     def _patch_get_extending_model(self):
         # A little patching to make sure that get_extending_model() returns
         # TestSection.
-        from scaffold import settings
+        from scaffold import app_settings
         def get_test_model():
             return TestSection
-        settings.get_extending_model = get_test_model
+        app_settings.get_extending_model = get_test_model
         from middleware import _build_section_path_map
         _build_section_path_map()   
     
