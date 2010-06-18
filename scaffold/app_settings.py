@@ -21,14 +21,6 @@ EXTENDING_MODEL_PATH = _get_setting('EXTENDING_MODEL_PATH',
     default = "%s.models.Section" % EXTENDING_APP_NAME
 )
 
-EXTENDING_VIEW_PATH = _get_setting('EXTENDING_VIEW_PATH',     
-    default = "%s.views" % EXTENDING_APP_NAME
-)
-
-EXTENDING_ADMIN_VIEW_PATH = _get_setting('EXTENDING_ADMIN_VIEW_PATH',     
-    default = "%s.admin_views" % EXTENDING_APP_NAME
-)
-
 LINK_HTML = _get_setting('LINK_HTML', default={
     'add_link': (
         "<a class=\"addlink\" href=\"add-to/%s/\">"

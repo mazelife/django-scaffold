@@ -33,8 +33,6 @@ BASE_DATA = [
   ]},
 ]
 
-
-
 class TestSection(BaseSection):
     """ A model of a mock section object"""
     description = models.CharField(max_length=255, blank=True)

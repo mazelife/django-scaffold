@@ -15,7 +15,7 @@ from django.shortcuts import get_object_or_404
 from django.views.generic import simple
 
 from forms import SectionForm
-import settings as app_settings
+import app_settings
 
 app_name =  app_settings.EXTENDING_APP_NAME
 allow_associated_ordering = app_settings.ALLOW_ASSOCIATED_ORDERING

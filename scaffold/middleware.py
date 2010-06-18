@@ -3,7 +3,7 @@ from django.core.cache import cache
 from django.core.exceptions import MiddlewareNotUsed
 from django.db.models.signals import post_save, post_delete
 
-import settings as app_settings
+import app_settings
 
 
 # Import and work-around for python < 2.4

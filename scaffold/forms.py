@@ -3,7 +3,7 @@ from django.contrib.admin import widgets as admin_widgets
 from django.contrib.contenttypes.generic import generic_inlineformset_factory
 from django.utils.translation import ugettext_lazy as _
 
-import settings as app_settings
+import app_settings
 
 class SectionForm(forms.ModelForm):
     """Form for working with Sections. Saving new sections is disabled."""

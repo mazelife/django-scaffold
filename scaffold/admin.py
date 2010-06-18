@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.contenttypes import generic
 from django.db import models
 
-import settings as app_settings
+import app_settings
 Section = app_settings.get_extending_model()
 
 class SectionAdmin(admin.ModelAdmin):

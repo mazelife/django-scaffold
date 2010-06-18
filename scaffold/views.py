@@ -5,7 +5,7 @@ from django.http import Http404
 from django.views.generic import simple
 
 from middleware import get_current_section, lookup_section_from_request
-import settings as app_settings 
+import app_settings 
 
 Section = app_settings.get_extending_model()
 

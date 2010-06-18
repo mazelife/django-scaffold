@@ -1,6 +1,6 @@
 from django import template
 
-from scaffold import settings as app_settings
+from scaffold import app_settings
 Section = app_settings.get_extending_model()
 
 register = template.Library()

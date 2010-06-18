@@ -1,8 +1,8 @@
 from django.conf.urls.defaults import *
 
-import settings as app_settings
+import app_settings
 
-urlpatterns = patterns(app_settings.EXTENDING_VIEW_PATH, 
+urlpatterns = patterns('scaffold.views', 
     url(r'^(?P<section_path>.+)$', 'section', name="section"),
     
 )

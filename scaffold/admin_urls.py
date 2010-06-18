@@ -2,9 +2,9 @@ from django.conf.urls.defaults import *
 from django.core.urlresolvers import reverse
 from django.views.generic import simple
 
-import settings as app_settings
+import app_settings
 
-urlpatterns = patterns(app_settings.EXTENDING_VIEW_PATH, 
+urlpatterns = patterns('scaffold.admin_views', 
     # We will 'namespace' the index name to avoid collisions with other 
     # admin view names. 
     url(r'^$', 'index', 
