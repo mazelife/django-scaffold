@@ -95,14 +95,8 @@ def add_to(request, section_id):
     if request.method == 'POST':
         section_form = SectionForm(request.POST, request.FILES)
         if section_form.is_valid():
-            section_kwargs = {}
-            for field in section_form.fields.keys():
-                section_kwargs[field] = section_form.cleaned_data[field]
-            if parent:
-                section = parent.add_child(**section_kwargs)
-            else:
-                section = Section.add_root(**section_kwargs)         
-            # Position node if necessary.
+            add_method = parent and parent.add_child or Section.add_root
+            section = add_method(**section_form.cleaned_data)
             if request.POST.get('position') and request.POST.get('child'):
                 section = Section.objects.get(
                     slug=section_form.cleaned_data['slug']
@@ -150,7 +144,6 @@ def add_to(request, section_id):
             request
         )
         commit_transaction = True
-        
     if commit_transaction:
         transaction.commit()
     else:
