@@ -24,8 +24,6 @@ if not os.path.exists(code_path):
     print "WARNING: Autodoc is busted."
 sys.path.append(code_path)
 
-sys.path.append('/Users/jstevenson/src/sectest_env/lib/python2.5/site-packages')
-import pdb; pdb.set_trace()
 #import settings
 #from django.core.management import setup_environ
 #setup_environ(settings)
