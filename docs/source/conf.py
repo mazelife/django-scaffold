@@ -18,13 +18,11 @@ import sys, os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.append(os.path.abspath('.'))
 
-code_path = os.path.abspath(os.path.join(os.path.abspath('.'), '../../'))
-
-if not os.path.exists(code_path):
-    print "WARNING: Autodoc is busted."
-sys.path.append(code_path)
-
-#import settings
+#code_path = os.path.abspath(os.path.join(os.path.abspath('.'), '../../'))
+#if not os.path.exists(code_path):
+#    print "WARNING: Autodoc is busted."
+#sys.path.append(code_path)
+#import scaffold.settings
 #from django.core.management import setup_environ
 #setup_environ(settings)
 
