@@ -95,8 +95,14 @@ def add_to(request, section_id):
     if request.method == 'POST':
         section_form = SectionForm(request.POST, request.FILES)
         if section_form.is_valid():
-            add_method = parent and parent.add_child or Section.add_root
-            section = add_method(**section_form.cleaned_data)
+            try:
+                if parent:
+                    section = parent.add_child(**section_form.cleaned_data)
+                else:
+                    section = Section.add_root(**section_form.cleaned_data)
+            except Exception, e:
+                transaction.rollback()
+                raise
             if request.POST.get('position') and request.POST.get('child'):
                 section = Section.objects.get(
                     slug=section_form.cleaned_data['slug']
