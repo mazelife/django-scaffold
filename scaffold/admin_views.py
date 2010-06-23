@@ -73,7 +73,6 @@ def index(request):
         extra_context = {'node_list':node_list_html, 'title': "Edit Sections"}
     )
 
-
 @transaction.commit_manually
 @site.admin_view
 @permission_required('%s.add_section' % app_name)
