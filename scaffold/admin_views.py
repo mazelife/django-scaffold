@@ -104,13 +104,9 @@ def add_to(request, section_id):
                 transaction.rollback()
                 raise
             if request.POST.get('position') and request.POST.get('child'):
-                try:
-                    section = Section.objects.get(
-                        slug=section_form.cleaned_data['slug']
-                    )
-                except MultipleObjectsReturned:
-                    transaction.rollback()
-                    raise
+                section = parent.get_subsections().get(
+                    slug=section_form.cleaned_data['slug']
+                )
                 rel_to = get_object_or_404(Section, 
                     pk=request.POST.get('child')
                 )
@@ -154,6 +150,7 @@ def add_to(request, section_id):
             request
         )
         commit_transaction = True
+        
     if commit_transaction:
         transaction.commit()
     else:
