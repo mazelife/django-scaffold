@@ -272,7 +272,6 @@ def move(request, section_id):
         else:
             if Section.find_problems()[4] != []:
                 Section.fix_tree()
-            transaction.commit()
             # Log that a section has been successfully moved.
             sections_admin = _get_admin_site()
             sections_admin and sections_admin.log_change(
@@ -280,6 +279,7 @@ def move(request, section_id):
                 section, 
                 "%s moved." % section.title
             )
+            transaction.commit()
             # Redirect to sections index page.
             return simple.redirect_to(request,
                 url=reverse("sections:sections_index"), 
