@@ -14,6 +14,7 @@ Contents:
    Creating an application that uses scaffold <extending>
    Customizing scaffold <customizing>
    Available settings <settings.rst>
+   Customizing the admin interface <admin>
 
 Indices and tables
 ==================
