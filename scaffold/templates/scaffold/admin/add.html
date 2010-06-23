@@ -8,7 +8,7 @@
 {%block breadcrumbs%}
 <div class="breadcrumbs">
       <a href="{%url admin:index%}">{%trans "Home"%}</a> &rsaquo; 
-      <a href="{%url sections:sections_index%}">{%trans "Sections"%}</a> &rsaquo;       
+      <a href="{%url scaffold:sections_index%}">{%trans "Sections"%}</a> &rsaquo;       
       {%trans "Add"%} 
       {%if not node%}
       {%trans "Section:"%} {%else%}{%trans "Subsection:"%} 
@@ -18,9 +18,9 @@
 {%block content%}
 {%if parent%}
 <p>{%trans "Belonging to:"%} {{parent.type}} <em>{{parent.title}}</em></p>
-<form enctype="multipart/form-data" action="{%url sections:add section_id=parent.pk%}" method="post">
+<form enctype="multipart/form-data" action="{%url scaffold:add section_id=parent.pk%}" method="post">
 {%else%}
-<form enctype="multipart/form-data" action="{%url sections:add section_id='root'%}" method="post">
+<form enctype="multipart/form-data" action="{%url scaffold:add section_id='root'%}" method="post">
 {%endif%}
     {% for fieldset in form %}
         {% include "scaffold/admin/includes/fieldset.html" %}

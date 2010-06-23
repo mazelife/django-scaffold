@@ -7,7 +7,7 @@ def _get_setting(project_setting_name, default=None, required=False):
     _project_settings_registry.insert(0, project_setting_name)
     if required and not default:
             assert hasattr(settings, project_setting_name), (
-                "The following setting is required to use the sections "                    
+                "The following setting is required to use the scaffold "                    
                 "application in your project: %s"
             ) %  project_setting_name
     return getattr(settings, project_setting_name, default)

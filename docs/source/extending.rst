@@ -51,7 +51,7 @@ Change the default urls.py file for your Django project to the following::
     admin.autodiscover()
     urlpatterns = patterns('',
         (r'^admin/sections/section/', include('scaffold.admin_urls', 
-            namespace="sections"
+            namespace="scaffold"
         )),
         (r'^admin/', include(admin.site.urls)),
         url(r'^(?P<section_path>.+)/$', 'scaffold.views.section', name="section"),

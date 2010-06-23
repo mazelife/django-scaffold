@@ -19,7 +19,7 @@ But, let's say you want a simpler scheme, with URLs like ``"/sections/local/"`` 
     admin.autodiscover()
     urlpatterns = patterns('',
         (r'^admin/sections/section/', include('scaffold.admin_urls', 
-            namespace="sections"
+            namespace="scaffold"
         )),
         (r'^admin/', include(admin.site.urls)),
         url(r'^(?P<section_path>.+)/$', 'scaffold.views.section', name="section"),
@@ -30,7 +30,7 @@ Now we can make the urlpatterns look like this::
     urlpatterns = patterns('',
         url(r'^sections/(?P<slug>[\w-]+)/?$', 'scaffold.views.section', name="section"),
         (r'^admin/sections/section/', include('scaffold.admin_urls', 
-            namespace="sections"
+            namespace="scaffold"
         )),
         (r'^admin/', include(admin.site.urls)),
     )
@@ -43,7 +43,7 @@ The one problem is that we aren't passing scaffold.views.section the arguments i
     urlpatterns = patterns('',
         url(r'^sections/(?P<slug>[\w-]+)/?$', 'sections.views.section'),
         (r'^admin/sections/section/', include('scaffold.admin_urls', 
-            namespace="sections"
+            namespace="scaffold"
         )),
         (r'^admin/', include(admin.site.urls)),
     )
@@ -89,7 +89,7 @@ One of scaffold's best features is it's integration with the Django admin. Even 
   urlpatterns = patterns('',
       url(r'^sections/(?P<slug>[\w-]+)/?$', 'sections.views.section'),
       (r'^admin/sections/section/', include('sections.admin_urls', 
-          namespace="sections"
+          namespace="scaffold"
       )),
       (r'^admin/', include(admin.site.urls)),
   )

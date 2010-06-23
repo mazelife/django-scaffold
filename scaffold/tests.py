@@ -150,7 +150,7 @@ class SectionTest(TestCase):
         index page and that its title is present."""
         self.login_and_load()
         sections = TestSection.objects.all()
-        response = self.client.get(reverse("sections:sections_index"))
+        response = self.client.get(reverse("scaffold:sections_index"))
         for section in sections:
             self.assertTrue(section.title in response.context['node_list'])
 
@@ -161,20 +161,20 @@ class SectionTest(TestCase):
         """
         # Try creating a root-level node.
         self.login_and_load()
-        url = reverse("sections:add", kwargs={'section_id': 'root'})
+        url = reverse("scaffold:add", kwargs={'section_id': 'root'})
         response = self.client.post(url, {
             'slug': 'bazz',
             'title': 'Bazz',
             'description': 'Bazz description'
         })
         # On sucess should redirect.
-        self.assertRedirects(response, reverse("sections:sections_index"))
+        self.assertRedirects(response, reverse("scaffold:sections_index"))
         self.assertTrue('bazz' in \
             [node.slug for node in TestSection.get_root_nodes()]
         )
         # Try creating a node that is a child         
         test_section = TestSection.objects.get(slug="2")
-        url = reverse("sections:add", kwargs={'section_id': test_section.id})
+        url = reverse("scaffold:add", kwargs={'section_id': test_section.id})
         response = self.client.get(url)
         self.assertContains(response, test_section.title)
         # Create a new section, but use a bad position:
@@ -200,7 +200,7 @@ class SectionTest(TestCase):
             'child': '4'
         })
         # On sucess should redirect.
-        self.assertRedirects(response, reverse("sections:sections_index"))
+        self.assertRedirects(response, reverse("scaffold:sections_index"))
         # Verify new section exists and is child of the "2" section...
         self.assertTrue(len(TestSection.objects.filter(title="Foo Bar")) == 1)
         foobar = TestSection.objects.get(slug="foobar")
@@ -208,7 +208,7 @@ class SectionTest(TestCase):
         # ...and make sure it was positioned correctly.
         self.assertEqual(test_section.get_children()[2].pk, foobar.pk)        
         # Now move the section...
-        url = reverse("sections:move", kwargs={'section_id': foobar.id})
+        url = reverse("scaffold:move", kwargs={'section_id': foobar.id})
         response = self.client.get(url)
         self.assertEqual(response.context['section'].pk, foobar.pk)
         # ... first with an incorrect reltionship field...
@@ -223,14 +223,14 @@ class SectionTest(TestCase):
             'to': TestSection.objects.get(slug="4").id
         })
         # On sucess should redirect to index.
-        self.assertRedirects(response, reverse("sections:sections_index"))
+        self.assertRedirects(response, reverse("scaffold:sections_index"))
         # Verify section moved where it was supposed to.
         self.assertEqual(
             TestSection.objects.get(slug="foobar").get_parent(),
             TestSection.objects.get(slug="4")
         )
         # Try moving a section to itself.
-        url = reverse("sections:move", kwargs={'section_id': foobar.id})
+        url = reverse("scaffold:move", kwargs={'section_id': foobar.id})
         response = self.client.post(url, {
             'relationship': 'child', 
             'to': foobar.id
@@ -250,7 +250,7 @@ class SectionTest(TestCase):
             'relationship': 'neighbor', 
             'to': TestSection.objects.get(slug="231").id
         })        
-        self.assertRedirects(response, reverse("sections:sections_index"))
+        self.assertRedirects(response, reverse("scaffold:sections_index"))
         # Verify section moved where it was supposed to.
         self.assertEqual(
             [u'231', u'foobar'],
@@ -262,7 +262,7 @@ class SectionTest(TestCase):
         self.login_and_load()
         test_section = TestSection.objects.get(slug="2")
         url = reverse(
-            "sections:delete", 
+            "scaffold:delete", 
             kwargs={'section_id': test_section.id}
         )
         response = self.client.get(url)
@@ -272,7 +272,7 @@ class SectionTest(TestCase):
             self.assertContains(response, child.title)
         response = self.client.post(url)
         # Delete operation redirects to index.
-        self.assertRedirects(response, reverse("sections:sections_index"))
+        self.assertRedirects(response, reverse("scaffold:sections_index"))
         # Section and it's children are gone.
         self.assertTrue(len(TestSection.objects.filter(title="2")) == 0)
 
@@ -281,7 +281,7 @@ class SectionTest(TestCase):
         self.login_and_load()
         test_section = TestSection.objects.get(slug="41")
         url = reverse(
-            "sections:edit", 
+            "scaffold:edit", 
             kwargs={'section_id': test_section.id}
         )
         response = self.client.get(url)
@@ -292,7 +292,7 @@ class SectionTest(TestCase):
             'description': 'Description tktk.'
         })
         # Verify edit operation redirects to index.
-        self.assertRedirects(response, reverse("sections:sections_index")) 
+        self.assertRedirects(response, reverse("scaffold:sections_index")) 
         # New data is there:
         edited_section = TestSection.objects.get(slug="41b")
         self.assertTrue(edited_section.title == 'Forty One B')
@@ -302,7 +302,7 @@ class SectionTest(TestCase):
         """View related content via the admin interface."""
         self.login_and_load()
         test_section = TestSection.objects.get(slug="41")
-        url = reverse("sections:related_content", 
+        url = reverse("scaffold:related_content", 
             kwargs = {'section_id': test_section.id}
         )
         response = self.client.get(url)
@@ -312,7 +312,7 @@ class SectionTest(TestCase):
         """View related content via the admin interface."""
         self.login_and_load()
         test_section = TestSection.objects.get(slug="41")
-        url = reverse("sections:order", 
+        url = reverse("scaffold:order", 
             kwargs = {'section_id': test_section.id}
         )
         response = self.client.get(url)

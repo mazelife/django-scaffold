@@ -139,7 +139,7 @@ def add_to(request, section_id):
             else:
                 transaction.rollback()
             return simple.redirect_to(request,
-                url=reverse("sections:sections_index"), 
+                url=reverse("scaffold:sections_index"), 
                 permanent=False
             )
     else:
@@ -179,7 +179,7 @@ def delete(request, section_id):
             sections_admin.log_deletion(request, section, section_repr)
         # Redirect to sections index page.
         return simple.redirect_to(request,
-            url=reverse("sections:sections_index"), 
+            url=reverse("scaffold:sections_index"), 
             permanent=False
         )        
     return simple.direct_to_template(request, 
@@ -213,7 +213,7 @@ def edit(request, section_id):
             )
             # Redirect to sections index page.
             return simple.redirect_to(request,
-                url=reverse("sections:sections_index"), 
+                url=reverse("scaffold:sections_index"), 
                 permanent=False
             )         
     else:
@@ -281,7 +281,7 @@ def move(request, section_id):
             transaction.commit()
             # Redirect to sections index page.
             return simple.redirect_to(request,
-                url=reverse("sections:sections_index"), 
+                url=reverse("scaffold:sections_index"), 
                 permanent=False
             )
     # Exclude the node from the list of candidates...
@@ -426,7 +426,7 @@ def _get_content_table(section, sort_key=None):
         try:
             edit_url = reverse(edit_url, args=[item.id])
         except:
-            edit_url = "%s:edit" % app
+            edit_url = "%s:edit" % 'scaffold'
             edit_url = reverse(edit_url, kwargs={'section_id': item.id})
         if item._meta.get_latest_by:
             date = getattr(item, item._meta.get_latest_by)

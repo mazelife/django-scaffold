@@ -7,7 +7,7 @@
 {% block breadcrumbs %}
 <div class="breadcrumbs">
       <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo; 
-      <a href="{%url sections:sections_index%}">{% trans "Sections" %}</a> &rsaquo;       
+      <a href="{%url scaffold:sections_index%}">{% trans "Sections" %}</a> &rsaquo;       
       {% trans "Edit" %} {{section.type}} <em>{{section.title}}</em>
 </div>
 {% endblock %}
@@ -25,14 +25,14 @@
     {%else%}
     <p class="note">You are editing a section.</p>
     {%endifnotequal%}
-    <form enctype="multipart/form-data" action="{%url sections:edit section_id=section.pk%}" method="post">    
+    <form enctype="multipart/form-data" action="{%url scaffold:edit section_id=section.pk%}" method="post">    
         {% for fieldset in form %}
             {% include "scaffold/admin/includes/fieldset.html" %}
         {% endfor %}
         <div class="submit-row">
-        <a class="button left" href="{%url sections:move section_id=section.pk%}">Move this {%ifnotequal section.depth 1%}subsection{%else%}section{%endifnotequal%} &raquo;</a>
+        <a class="button left" href="{%url scaffold:move section_id=section.pk%}">Move this {%ifnotequal section.depth 1%}subsection{%else%}section{%endifnotequal%} &raquo;</a>
         {%if allow_associated_ordering%}
-        <a class="button left" href="{%url sections:order section_id=section.pk%}">Order this {%ifnotequal section.depth 1%}subsection{%else%}section{%endifnotequal%}'s content &raquo;</a>
+        <a class="button left" href="{%url scaffold:order section_id=section.pk%}">Order this {%ifnotequal section.depth 1%}subsection{%else%}section{%endifnotequal%}'s content &raquo;</a>
         {%endif%}
         <input type="submit" name="_save" class="default" value="Save">
         </div>

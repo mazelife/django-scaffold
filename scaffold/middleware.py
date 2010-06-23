@@ -48,7 +48,7 @@ def get_current_section():
     MiddlewareNotUsed exception. 
    
     """
-    if not getattr(_thread_locals, 'sections_middleware_enabled', None):
+    if not getattr(_thread_locals, 'scaffold_middleware_enabled', None):
         raise MiddlewareNotUsed, (
             'SectionsMiddleware is not used in this server configuration. '
             'Please enable the SectionsMiddleware.'
@@ -75,7 +75,7 @@ class SectionsMiddleware(object):
     
     def process_request(self, request):
         section = lookup_section_from_request(request)
-        _thread_locals.sections_middleware_enabled = True
+        _thread_locals.scaffold_middleware_enabled = True
         _thread_locals.section = section
 
 def reset_section_path_map(sender, **kwargs):
