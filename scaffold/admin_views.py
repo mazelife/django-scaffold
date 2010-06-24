@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import permission_required
 from django.contrib.admin import site
 from django.contrib.admin  import helpers
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import MultipleObjectsReturned
 from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db import transaction
@@ -103,7 +104,7 @@ def add_to(request, section_id):
                 transaction.rollback()
                 raise
             if request.POST.get('position') and request.POST.get('child'):
-                section = Section.objects.get(
+                section = parent.get_subsections().get(
                     slug=section_form.cleaned_data['slug']
                 )
                 rel_to = get_object_or_404(Section, 
@@ -149,6 +150,7 @@ def add_to(request, section_id):
             request
         )
         commit_transaction = True
+        
     if commit_transaction:
         transaction.commit()
     else:

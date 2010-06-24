@@ -21,7 +21,7 @@ def _build_section_path_map():
     paths = {}
     Section = app_settings.get_extending_model()
     for section in Section.objects.all():
-        paths[section.get_absolute_url()] = section.slug
+        paths[section.full_path] = section.slug
     cache.set(app_settings.PATH_CACHE_KEY, paths, app_settings.PATH_CACHE_TTL) 
     return paths
 

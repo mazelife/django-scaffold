@@ -28,13 +28,16 @@ class BaseSection(MP_Node):
     def __unicode__(self):
         indent_string = "-" * (self.get_depth() - 1)
         return indent_string + self.title
-
-    @models.permalink
-    def get_absolute_url(self):
+        
+    @property
+    def full_path(self):
         section_path = [node.slug for node in self.get_ancestors()] 
         section_path.append(self.slug)
-        section_path = "/".join(section_path)
-        return ("section", (), {'section_path': section_path})
+        return "/".join(section_path)
+    
+    @models.permalink
+    def get_absolute_url(self):
+        return ("section", (), {'section_path': self.full_path})
     
     @property
     def type(self):
