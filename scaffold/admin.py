@@ -2,8 +2,10 @@ from django.contrib import admin
 from django.contrib.contenttypes import generic
 from django.db import models
 
+from forms import SectionForm
 import app_settings
 Section = app_settings.get_extending_model()
+
 
 class SectionAdmin(admin.ModelAdmin):
     
@@ -12,6 +14,7 @@ class SectionAdmin(admin.ModelAdmin):
             "all": ("scaffold/styles/scaffold-admin.css",)
         }
         
+    form = SectionForm
     list_per_page = 10
     
     def __init__(self, *args, **kwargs):

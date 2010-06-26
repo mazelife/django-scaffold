@@ -15,7 +15,6 @@ from django.http import HttpResponse, HttpResponseBadRequest, \
 from django.shortcuts import get_object_or_404
 from django.views.generic import simple
 
-from forms import SectionForm
 import app_settings
 
 app_name =  app_settings.EXTENDING_APP_NAME
@@ -93,7 +92,7 @@ def add_to(request, section_id):
         setattr(parent, 'has_children', len(parent.get_children()) > 0)
     sections_admin = _get_admin_site()
     if request.method == 'POST':
-        section_form = SectionForm(request.POST, request.FILES)
+        section_form = _form_proxy(request.POST, request.FILES)
         if section_form.is_valid():
             try:
                 if parent:
@@ -144,7 +143,7 @@ def add_to(request, section_id):
                 permanent=False
             )
     else:
-        section_form = SectionForm()
+        section_form = _form_proxy()
         section_admin_form, media = _get_admin_form_and_media(
             section_form, 
             request
@@ -202,7 +201,7 @@ def edit(request, section_id):
     rel_sort_key = allow_associated_ordering and 'order' or None
     sections_admin = _get_admin_site()
     if request.method == 'POST':
-        section_form = SectionForm(request.POST, request.FILES,
+        section_form = _form_proxy(request.POST, request.FILES,
             instance=section
         )
         if section_form.is_valid():
@@ -219,7 +218,7 @@ def edit(request, section_id):
                 permanent=False
             )         
     else:
-        section_form = SectionForm(instance=section)
+        section_form = _form_proxy(instance=section)
         section_form, media = _get_admin_form_and_media(section_form, request)
     content_type_id = ContentType.objects.get_for_model(Section).id
     return simple.direct_to_template(request, 
@@ -456,6 +455,8 @@ def _get_user_link_html(request):
         del link_html['del_link']
     return link_html
 
+
+
 def _get_admin_site():
     """
     A utility function for getting the ModelAdmin instance for sections.
@@ -463,6 +464,22 @@ def _get_admin_site():
     if site._registry.has_key(Section):
         return site._registry[Section]
     return None
+
+def _form_proxy(*args, **kwargs):
+    """
+    A utility function that checks the admin site has a form property set,
+    and returns that. If not, the default SectionForm is returned.
+    """
+    admin_site = _get_admin_site()
+    from forms import SectionForm
+    base_excludes = SectionForm._meta.exclude
+    more_excludes = admin_site.form._meta.exclude
+    if base_excludes != more_excludes:
+        all_excludes = tuple(set(more_excludes + base_excludes))
+        admin_site.form._meta.exclude = all_excludes
+    if not admin_site.form._meta.model:
+        raise AttributeError, "Your model form is missing a model!"
+    return admin_site.form(*args, **kwargs)
 
 def _get_admin_form_and_media(model_form, request):
     """
