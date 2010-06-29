@@ -1,0 +1,40 @@
+#toolbar{
+    display: none;
+    border: 1px solid #CCC;
+    border-width: 0 1px;
+}
+#changelist{
+    border-width: 1px 0 0;
+}
+    #changelist #toolbar{
+        margin-bottom: -3px;
+        border-bottom: 1px solid #CCC;
+    }
+        #changelist #node-list{
+            margin-bottom: 0;
+            margin-left: 5px;
+        }
+#changelist-search{}
+    #changelist-search label{
+        width: auto;
+        margin-right: 5px;
+        position: relative;
+        top: 4px;
+        left: 2px;
+    }
+    #changelist-search p{
+        font-size: 11px;
+        margin: 0;
+        padding: 4px 0 3px 23px;
+        color: #222;
+    }
+        #changelist-search p abbr{
+            font-weight: bold;
+            border: none;
+            margin: 0 2px;
+            font-size: 115%;
+            cursor: pointer;
+        }
+            #changelist-search p abbr:hover{
+                text-decoration: underline;
+            }

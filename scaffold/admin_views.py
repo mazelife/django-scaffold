@@ -30,47 +30,51 @@ def index(request):
     within the django template syntax, the tree html (nested <ul> elements) is
     constructed manually in this view using the crawl function.
     """
+    
     roots = Section.get_root_nodes()
     link_html = _get_user_link_html(request)
-    node_list_html = '<ul id="node-list" class="treeview-red">'
-
+    
     def crawl(node, admin_links=[]):
-        link_list =  " " + " | ".join(
-            [link_html[l] % node.pk for l in admin_links]
+        """
+        Nests a series of treebeard nodes in unordered lists
+        """
+        
+        # Generate HTML for the current node
+        html = (
+            '<li id="node-%s"><span><a href=\"%s\">%s <small> &ndash; '
+            '/%s/</small></a></span><div class="links">%s</div>'
+        ) % (
+            node.id,
+            node.get_absolute_url(),
+            node.title, 
+            node.full_path,
+            " ".join([link_html[l] % node.pk for l in admin_links])
         )
-        if node.is_leaf():
-            return "<li><a href=\"edit/%s/\"><span>%s</span></a>%s</li>" % (
-                node.pk,
-                node.title, 
-                link_list
-            )
-        else:
+        
+        # Inject submenu of children, if applicable
+        if not node.is_leaf():
             children = node.get_children()
-            html = "<li><a href=\"edit/%s/\"><span>%s</span></a>%s<ul>" % (
-                node.pk,
-                node.title, 
-                link_list
-            )        
-            html += "".join(
+            children = "".join(
                 map(partial(crawl, admin_links=admin_links), children)
             )
-            return html + "</ul></li>"
-
-
+            html += "<ul>%s</ul>" % children
+        
+        return html + "</li>"
+    
+    # Create list of nodes
     crawl_add_links = partial(
         crawl, 
         admin_links=link_html.keys()
     )
+    
+    # Generate HTML
+    node_list_html = '<ul id="node-list">'
     node_list_html += "".join(map(crawl_add_links, roots))
-    if link_html.has_key('add_link'):        
-        node_list_html += (
-            '<li><a class="addlink" href="add-to/root/">'
-            'Add a top-level section.</a></li>'
-        )
     node_list_html += "</ul>"
+    
     return simple.direct_to_template(request, 
         template = "scaffold/admin/index.html",
-        extra_context = {'node_list':node_list_html, 'title': "Edit Sections"}
+        extra_context = {'node_list':node_list_html, 'title': "Edit Pages"}
     )
 
 @transaction.commit_manually
@@ -303,7 +307,7 @@ def move(request, section_id):
             )
             return html + "</ul></li>"
     root_nodes = Section.get_root_nodes()
-    tree_html = '<ul id="node-list" class="treeview-red">%s</ul>'
+    tree_html = '<ul id="node-list">%s</ul>'
     tree_html = tree_html % ("".join(map(crawl, root_nodes)))
     return simple.direct_to_template(request, 
         template = "scaffold/admin/move.html",
@@ -368,7 +372,7 @@ def order_all_content(request, section_id):
     section = get_object_or_404(Section, id=section_id)
     if not allow_associated_ordering:
         return simple.redirect_to(request,
-            url=reverse("sections:edit", kwargs={'section_id': section.id}), 
+            url=reverse("sca:edit", kwargs={'section_id': section.id}), 
             permanent=False
         )        
     content_table = _get_content_table(section, sort_key='order')
