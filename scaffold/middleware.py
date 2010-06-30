@@ -62,7 +62,15 @@ def lookup_section(lookup_from):
         section_paths = path_map.keys()
         # Sort by shortest path to longest.
         section_paths.sort(lambda x, y: len(x) <= len(y) and 1 or -1)
-        matches = [p for p in section_paths if request.path.startswith(p)]
+        
+        # Strips leading and trailing slashes
+        path = lookup_from.path
+        if path.startswith('/'):
+            path = path[1:]
+        if path.endswith('/'):
+            path = path[:-1]
+
+        matches = [p for p in section_paths if path.startswith(p)]
         if len(matches) >= 1:
             return Section.objects.get(slug=path_map[matches[0]])
         else:
