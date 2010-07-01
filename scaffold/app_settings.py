@@ -11,7 +11,6 @@ def _get_setting(project_setting_name, default=None, required=False):
                 "application in your project: %s"
             ) %  project_setting_name
     return getattr(settings, project_setting_name, default)
-    
 
 EXTENDING_APP_NAME = _get_setting('EXTENDING_APP_NAME', 
     required=True
@@ -44,7 +43,7 @@ PATH_CACHE_TTL = _get_setting('PATH_CACHE_TTL',
     default = (60 * 60 * 12)
 )
 PATH_CACHE_KEY = _get_setting('PATH_CACHE_KEY',
-    default="section-path-map" 
+    default="scaffold-path-map" 
 )
 
 ALLOW_ASSOCIATED_ORDERING = _get_setting('ALLOW_ASSOCIATED_ORDERING',   

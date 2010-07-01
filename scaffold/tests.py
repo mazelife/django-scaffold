@@ -178,7 +178,6 @@ class SectionTest(TestCase):
         the "2" section and then move it to the "4" section as the last child. 
         """
         # Try creating a root-level node.
-        self._patch_get_extending_model()
         self.login_and_load()
         admin_urls = self.get_admin_urls('root')
         response = self.client.post(admin_urls['create'], {
