@@ -126,8 +126,8 @@ class SectionTest(TestCase):
             
     @property
     def admin_index_url(self):
-        opts = app_settings.get_extending_model()._meta
         self._patch_get_extending_model()
+        opts = app_settings.get_extending_model()._meta
         return reverse(
             'admin:%s_%s_changelist' % (opts.app_label, opts.module_name)
         )
@@ -178,6 +178,7 @@ class SectionTest(TestCase):
         the "2" section and then move it to the "4" section as the last child. 
         """
         # Try creating a root-level node.
+        self._patch_get_extending_model()
         self.login_and_load()
         admin_urls = self.get_admin_urls('root')
         response = self.client.post(admin_urls['create'], {

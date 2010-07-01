@@ -46,7 +46,7 @@ class SectionAdmin(admin.ModelAdmin):
             return update_wrapper(wrapper, view)
         
         urls = super(SectionAdmin, self).get_urls()
-        info = model_proxy._meta.app_label, model_proxy._meta.module_name
+        info = self.model._meta.app_label, self.model._meta.module_name
         return patterns('',
             url(r'^(.+)/create/$',
                 wrap(self.custom_add_view),
@@ -77,7 +77,7 @@ class SectionAdmin(admin.ModelAdmin):
     
     @property
     def app_context(self):
-        info = model_proxy._meta.app_label, model_proxy._meta.module_name
+        info = self.model._meta.app_label, model_proxy._meta.module_name
         return {
             'app_label': info[0],
             'model_label': info[1],
@@ -127,7 +127,7 @@ class SectionAdmin(admin.ModelAdmin):
         if not self.has_view_permission(request):
             raise PermissionDenied
 
-        roots = model_proxy.get_root_nodes()
+        roots = self.model.get_root_nodes()
         link_html = _get_user_link_html(request)
         link_html_fields = [name for name, html in link_html]
         link_html_dict = dict(link_html)
@@ -187,7 +187,7 @@ class SectionAdmin(admin.ModelAdmin):
         """
         This add view overrides the the standard admin add_view (see above).
         """
-        model = model_proxy
+        model = self.model
         opts = model._meta
         if not self.has_add_permission(request):
             raise PermissionDenied
@@ -199,7 +199,7 @@ class SectionAdmin(admin.ModelAdmin):
             setattr(parent, 'has_children', len(parent.get_children()) > 0)        
         ModelForm = self.get_form(request)
         if request.method == 'POST':
-            info = model_proxy._meta.app_label, model_proxy._meta.module_name
+            info = self.model._meta.app_label, self.model._meta.module_name
             form = ModelForm(request.POST, request.FILES)
             if form.is_valid():
                 form_validated = True
@@ -213,13 +213,13 @@ class SectionAdmin(admin.ModelAdmin):
                     raise ValidationError, e
             else:
                 form_validated = False
-                new_object = model_proxy
+                new_object = self.model
             if form_validated and request.POST.get('position') \
                 and request.POST.get('child'):
                 section = parent.get_subsections().get(
                     slug = form.cleaned_data['slug']
                 )
-                rel_to = model_proxy.objects.get(pk=request.POST.get('child'))
+                rel_to = self.model.objects.get(pk=request.POST.get('child'))
                 rel = request.POST.get('position')
                 pos_map = {
                     'before': 'left',
@@ -283,8 +283,8 @@ class SectionAdmin(admin.ModelAdmin):
         This view allows the user to delete Sections within the node tree.
         """
         try:
-            obj = model_proxy.objects.get(pk=object_id)
-        except model_proxy.DoesNotExist:
+            obj = self.model.objects.get(pk=object_id)
+        except self.model.DoesNotExist:
             # Don't raise Http404 just yet, because we haven't checked
             # permissions yet. We don't want an unauthenticated user to be able
             # to determine whether a given object exists.
@@ -311,11 +311,11 @@ class SectionAdmin(admin.ModelAdmin):
     def move_view(self, request, section_id):
         """This view allows the user to move sections within the node tree."""
         #FIXME: should be an AJAX responder version of this view. 
-        model = model_proxy
+        model = self.model
         opts = model._meta
         try:
             obj = self.queryset(request).get(pk=unquote(section_id))
-        except model_proxy.DoesNotExist:
+        except self.model.DoesNotExist:
             # Don't raise Http404 just yet, because we haven't checked
             # permissions. We don't want an unauthenticated user to be able
             # to determine whether a given object exists.        
@@ -335,7 +335,7 @@ class SectionAdmin(admin.ModelAdmin):
                 rel_to = obj.get_root_nodes()[0]
                 rel = 'top'
             else:
-                rel_to = get_object_or_404(model_proxy,
+                rel_to = get_object_or_404(self.model,
                     pk=request.POST.get('to')
                 )
             if rel_to.pk == obj.pk:
@@ -356,15 +356,15 @@ class SectionAdmin(admin.ModelAdmin):
             except Exception, e:
                 return HttpResponseServerError("Unable to move node. %s" % e)
             else:
-                if model_proxy.find_problems()[4] != []:
-                    model_proxy.fix_tree()
+                if self.model.find_problems()[4] != []:
+                    self.model.fix_tree()
                 # Log that a section has been successfully moved.
                 change_message = "%s moved." % obj.title
                 self.log_change(request, obj, change_message)
                 # Redirect to sections index page.
                 return self.redirect_to_scaffold_index(request)
         # Exclude the node from the list of candidates...
-        other_secs = model_proxy.objects.exclude(pk=section_id)
+        other_secs = self.model.objects.exclude(pk=section_id)
         # ...then exclude descendants of the node being moved.
         other_secs = [n for n in other_secs if not n.is_descendant_of(obj)]
 
@@ -380,7 +380,7 @@ class SectionAdmin(admin.ModelAdmin):
                     map(crawl, children)
                 )
                 return html + "</ul></li>"
-        root_nodes = model_proxy.get_root_nodes()
+        root_nodes = self.model.get_root_nodes()
         tree_html = '<ul id="node-list" class="treeview-red">%s</ul>'
         tree_html = tree_html % ("".join(map(crawl, root_nodes)))
         context = {
@@ -398,7 +398,7 @@ class SectionAdmin(admin.ModelAdmin):
         """
         This view allows the user to edit Sections within the tree.
         """        
-        model = model_proxy
+        model = self.model
         opts = model._meta
         rel_sort_key = allow_associated_ordering and 'order' or None
         try:
@@ -475,7 +475,7 @@ class SectionAdmin(admin.ModelAdmin):
             )
             inline_admin_formsets.append(inline_admin_formset)
             media = media + inline_admin_formset.media
-        content_type_id = ContentType.objects.get_for_model(model_proxy).id
+        content_type_id = ContentType.objects.get_for_model(self.model).id
         context = {
             'section': obj,
             'content_type_id': content_type_id,
@@ -503,7 +503,7 @@ class SectionAdmin(admin.ModelAdmin):
         """
         try:
             obj = self.queryset(request).get(pk=unquote(section_id))
-        except model_proxy.DoesNotExist:
+        except self.model.DoesNotExist:
             # Don't raise Http404 just yet, because we haven't checked
             # permissions. We don't want an unauthenticated user to be able
             # to determine whether a given object exists.        
@@ -549,7 +549,7 @@ class SectionAdmin(admin.ModelAdmin):
         """
         try:
             obj = self.queryset(request).get(pk=unquote(section_id))
-        except model_proxy.DoesNotExist:
+        except self.model.DoesNotExist:
             # Don't raise Http404 just yet, because we haven't checked
             # permissions. We don't want an unauthenticated user to be able
             # to determine whether a given object exists.        
