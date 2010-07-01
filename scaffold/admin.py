@@ -608,7 +608,6 @@ class SectionAdmin(admin.ModelAdmin):
         )
 
 
-
 ######################################
 #        Utility Functions
 ######################################
@@ -616,7 +615,7 @@ class SectionAdmin(admin.ModelAdmin):
 
 def _get_content_table(obj, sort_key=None):
     """
-    Not a view function; returns list of tuples containing:
+    Returns list of tuples containing:
     
     * the related object
     * its date (from get_latest_by prop, if it's set)
@@ -646,6 +645,11 @@ def _get_content_table(obj, sort_key=None):
     return content_table
 
 def _get_user_link_html(request):
+    """
+    Checks available user permissions to make sure that the rendered changelist 
+    page does not offer the user options which they don't have permissions for 
+    (avoids having a PermissionDenied exception get raised). 
+    """
     link_html = copy(app_settings.LINK_HTML)
     app_label = model_proxy._meta.app_label
     model_proxy._meta.get_add_permission()
