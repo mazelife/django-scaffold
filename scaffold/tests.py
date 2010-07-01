@@ -127,6 +127,7 @@ class SectionTest(TestCase):
     @property
     def admin_index_url(self):
         opts = app_settings.get_extending_model()._meta
+        self._patch_get_extending_model()
         return reverse(
             'admin:%s_%s_changelist' % (opts.app_label, opts.module_name)
         )
