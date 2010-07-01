@@ -13,8 +13,8 @@
 {% block breadcrumbs %}
 <div class="breadcrumbs">
       <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo; 
-      <a href="{%url scaffold:sections_index%}">{% trans "Sections" %}</a> &rsaquo;       
-     {% trans 'Delete'%} {{section.type}} <em>{{section.title}}</em>
+      <a href="{{changelist_url}}">{{app_label|capfirst}}</a> &rsaquo;
+     {% trans 'Delete'%} {{model_label|capfirst}} <em>{{section.title}}</em>
 </div>
 {% endblock %}
 {% block content %}
@@ -33,7 +33,7 @@
 </div>
 {%endwith%}
 {%endif%}
-<form action="{%url scaffold:delete section_id=section.pk%}" method="POST">
+<form action="" method="POST">
 <input type="submit" value="Yes, I'm sure" />
 </form>
 {% endblock %}

@@ -9,8 +9,8 @@
 {%endblock%}
 {% block breadcrumbs %}
 <div class="breadcrumbs">
-      <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo; 
-      {% trans "Sections" %}
+      <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo;
+      {{model_label|capfirst}}s
 </div>
 {% endblock %}
 {% block content %}

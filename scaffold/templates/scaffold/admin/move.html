@@ -14,8 +14,8 @@
 {% block breadcrumbs %}
 <div class="breadcrumbs">
       <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo; 
-      <a href="{%url scaffold:sections_index%}">{% trans "Sections" %}</a> &rsaquo;       
-      {%trans "Move"%} {{section.type}} <em>{{section.title}}</em>
+      <a href="{{changelist_url}}">{{app_label|capfirst}}</a> &rsaquo;
+      {%trans "Move"%} <em>{{model_label|capfirst}}</em>     
 </div>
 {% endblock %}
 {% block content %}
@@ -23,7 +23,7 @@
 <h4>Current Section Structure:</h4>
 {{preview|safe}}
 </div>
-<form action="{%url scaffold:move section_id=section.pk%}" method="POST" class="move-section">
+<form action="" method="POST" class="move-section">
 <label>Make this section a 
     <select name="relationship">
         <option value="neighbor">Neighbor</option>

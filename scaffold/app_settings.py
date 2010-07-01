@@ -23,15 +23,15 @@ EXTENDING_MODEL_PATH = _get_setting('EXTENDING_MODEL_PATH',
 
 LINK_HTML = _get_setting('LINK_HTML', default={
     'add_link': (
-        "<a class=\"addlink\" href=\"add-to/%s/\">"
+        "<a class=\"addlink\" href=\"%s/create/\">"
         "add child</a>"
     ),
     'del_link': (
-        "<a class=\"deletelink\" href=\"delete/%s/\">"
+        "<a class=\"deletelink\" href=\"%s/delete/\">"
         "delete</a>" 
     ),
     'list_link': (
-        "<a class=\"changelink\" href=\"related/%s/\">"
+        "<a class=\"changelink\" href=\"%s/related/\">"
         "list content</a>" 
     )
 })

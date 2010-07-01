@@ -11,13 +11,13 @@
 {% block breadcrumbs %}
 <div class="breadcrumbs">
       <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo; 
-      <a href="{%url scaffold:sections_index%}">{% trans "Sections" %}</a> &rsaquo;       
-      {%trans "Order content for the"%} {{section.type}} <em>{{section.title}}</em>
+       <a href="{{changelist_url}}">{{app_label|capfirst}}</a> &rsaquo;
+      {%trans "Order content for the"%} {{model_label|capfirst}} <em>{{section.title}}</em>
 </div>
 {% endblock %}
 {% block content %}
 <p>The following items belong to the <em>{{section.title}}</em> {{section.type}}. Drag and drop the obects to place them in the correct order.</p> 
-<form action="{%url scaffold:order section_id=section.pk%}" method="POST">
+<form action="" method="POST">
     <ul id="sortable">
     {%for item, date, app, obj, relationship_type, order in related_content%}
     <li class="ui-state-default">

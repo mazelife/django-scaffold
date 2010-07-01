@@ -11,8 +11,8 @@
 {% block breadcrumbs %}
 <div class="breadcrumbs">
       <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo; 
-      <a href="{%url scaffold:sections_index%}">{% trans "Sections" %}</a> &rsaquo;       
-      {% trans "Content related to"%} the {{section.type}} <em>{{section.title}}</em>
+       <a href="{{changelist_url}}">{{app_label|capfirst}}</a> &rsaquo;
+      {% trans "Content related to"%} <em>{{model_label|capfirst}}</em>
 </div>
 {% endblock %}
 {% block content %}

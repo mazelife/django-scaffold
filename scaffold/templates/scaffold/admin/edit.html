@@ -7,8 +7,9 @@
 {% block breadcrumbs %}
 <div class="breadcrumbs">
       <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo; 
-      <a href="{%url scaffold:sections_index%}">{% trans "Sections" %}</a> &rsaquo;       
-      {% trans "Edit" %} {{section.type}} <em>{{section.title}}</em>
+      <a href="{{changelist_url}}">{{app_label|capfirst}}</a> &rsaquo;
+      {%trans "Edit"%} <em>{{model_label|capfirst}}</em>
+
 </div>
 {% endblock %}
 ???
@@ -25,14 +26,19 @@
     {%else%}
     <p class="note">You are editing a section.</p>
     {%endifnotequal%}
-    <form enctype="multipart/form-data" action="{%url scaffold:edit section_id=section.pk%}" method="post">    
+    <form enctype="multipart/form-data" action="" method="post" id="{{ opts.module_name }}_form">    
         {% for fieldset in form %}
             {% include "scaffold/admin/includes/fieldset.html" %}
         {% endfor %}
+        
+        {% for inline_admin_formset in inline_admin_formsets %}
+            {% include inline_admin_formset.opts.template %}
+        {% endfor %}        
+        
         <div class="submit-row">
-        <a class="button left" href="{%url scaffold:move section_id=section.pk%}">Move this {%ifnotequal section.depth 1%}subsection{%else%}section{%endifnotequal%} &raquo;</a>
+        <a class="button left" href="move/">Move this {%ifnotequal section.depth 1%}subsection{%else%}section{%endifnotequal%} &raquo;</a>
         {%if allow_associated_ordering%}
-        <a class="button left" href="{%url scaffold:order section_id=section.pk%}">Order this {%ifnotequal section.depth 1%}subsection{%else%}section{%endifnotequal%}'s content &raquo;</a>
+        <a class="button left" href="order/">Order this {%ifnotequal section.depth 1%}subsection{%else%}section{%endifnotequal%}'s content &raquo;</a>
         {%endif%}
         <input type="submit" name="_save" class="default" value="Save">
         </div>

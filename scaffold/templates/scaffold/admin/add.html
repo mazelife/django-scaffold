@@ -8,23 +8,38 @@
 {%block breadcrumbs%}
 <div class="breadcrumbs">
       <a href="{%url admin:index%}">{%trans "Home"%}</a> &rsaquo; 
-      <a href="{%url scaffold:sections_index%}">{%trans "Sections"%}</a> &rsaquo;       
-      {%trans "Add"%} 
-      {%if not node%}
-      {%trans "Section:"%} {%else%}{%trans "Subsection:"%} 
-      {%endif%}{{node.title}}
+      <a href="{{changelist_url}}">{{app_label|capfirst}}</a> &rsaquo;
+      {%trans "Add"%} {{model_label|capfirst}}
 </div>
 {%endblock%}
 {%block content%}
 {%if parent%}
 <p>{%trans "Belonging to:"%} {{parent.type}} <em>{{parent.title}}</em></p>
-<form enctype="multipart/form-data" action="{%url scaffold:add section_id=parent.pk%}" method="post">
+<form enctype="multipart/form-data" action="" method="post">
 {%else%}
-<form enctype="multipart/form-data" action="{%url scaffold:add section_id='root'%}" method="post">
+<form enctype="multipart/form-data" action="" method="post">
 {%endif%}
+    {%if has_fieldsets%}
     {% for fieldset in form %}
         {% include "scaffold/admin/includes/fieldset.html" %}
-    {% endfor %}
+    {%endfor%}
+    {%else%}
+    <fieldset class="module aligned">
+        <div class="form-row">
+            {%for field in form%}
+                     <div class="field-box">
+                         {{field.errors}}
+                         {% if field.is_checkbox %}
+                             {{ field. }}{{ field.label_tag }}
+                         {% else %}
+                             {{ field.label_tag }}{{ field }}
+                         {% endif %}
+                         {% if field.help_text %}<p class="help">{{ field.help_text|safe }}</p>{% endif %}                     
+                    </div>
+             {%endfor%}
+        </div>
+    </fieldset>
+    {%endif%}
     {%if parent.has_children%}
     {%with parent.get_children as children%}
     <fieldset class="position-node ui-state-highlight ui-corner-all">
@@ -48,6 +63,7 @@
     {%endwith%}
     {%endif%}
     <div class="submit-row">
+    <input type="submit" name="_continue" value="Save and continue editing">
     <input type="submit" name="_save" class="default" value="Save">
     </div>
 </form>
