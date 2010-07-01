@@ -124,10 +124,12 @@ class SectionAdmin(admin.ModelAdmin):
         <ul> elements) is constructed manually in this view using the crawl 
         function.
         """
+        model = self.model
+        
         if not self.has_view_permission(request):
             raise PermissionDenied
 
-        roots = self.model.get_root_nodes()
+        roots = model.get_root_nodes()
         link_html = _get_user_link_html(request)
         link_html_fields = [name for name, html in link_html]
         link_html_dict = dict(link_html)
@@ -199,7 +201,7 @@ class SectionAdmin(admin.ModelAdmin):
             setattr(parent, 'has_children', len(parent.get_children()) > 0)        
         ModelForm = self.get_form(request)
         if request.method == 'POST':
-            info = self.model._meta.app_label, self.model._meta.module_name
+            info = model._meta.app_label, model._meta.module_name
             form = ModelForm(request.POST, request.FILES)
             if form.is_valid():
                 form_validated = True
@@ -213,13 +215,13 @@ class SectionAdmin(admin.ModelAdmin):
                     raise ValidationError, e
             else:
                 form_validated = False
-                new_object = self.model
+                new_object = model
             if form_validated and request.POST.get('position') \
                 and request.POST.get('child'):
                 section = parent.get_subsections().get(
                     slug = form.cleaned_data['slug']
                 )
-                rel_to = self.model.objects.get(pk=request.POST.get('child'))
+                rel_to = model.objects.get(pk=request.POST.get('child'))
                 rel = request.POST.get('position')
                 pos_map = {
                     'before': 'left',
@@ -282,9 +284,11 @@ class SectionAdmin(admin.ModelAdmin):
         """
         This view allows the user to delete Sections within the node tree.
         """
+        model = self.model
+        
         try:
-            obj = self.model.objects.get(pk=object_id)
-        except self.model.DoesNotExist:
+            obj = model.objects.get(pk=object_id)
+        except model.DoesNotExist:
             # Don't raise Http404 just yet, because we haven't checked
             # permissions yet. We don't want an unauthenticated user to be able
             # to determine whether a given object exists.
@@ -311,11 +315,13 @@ class SectionAdmin(admin.ModelAdmin):
     def move_view(self, request, section_id):
         """This view allows the user to move sections within the node tree."""
         #FIXME: should be an AJAX responder version of this view. 
+        
         model = self.model
         opts = model._meta
+        
         try:
             obj = self.queryset(request).get(pk=unquote(section_id))
-        except self.model.DoesNotExist:
+        except model.DoesNotExist:
             # Don't raise Http404 just yet, because we haven't checked
             # permissions. We don't want an unauthenticated user to be able
             # to determine whether a given object exists.        
@@ -328,14 +334,14 @@ class SectionAdmin(admin.ModelAdmin):
                     'name': force_unicode(opts.verbose_name), 
                     'key': escape(object_id)
             })
-
+        
         if request.method == 'POST':
             rel = request.POST.get('relationship')
             if request.POST.get('to') == 'TOP':
                 rel_to = obj.get_root_nodes()[0]
                 rel = 'top'
             else:
-                rel_to = get_object_or_404(self.model,
+                rel_to = get_object_or_404(model,
                     pk=request.POST.get('to')
                 )
             if rel_to.pk == obj.pk:
@@ -356,15 +362,15 @@ class SectionAdmin(admin.ModelAdmin):
             except Exception, e:
                 return HttpResponseServerError("Unable to move node. %s" % e)
             else:
-                if self.model.find_problems()[4] != []:
-                    self.model.fix_tree()
+                if model.find_problems()[4] != []:
+                    model.fix_tree()
                 # Log that a section has been successfully moved.
                 change_message = "%s moved." % obj.title
                 self.log_change(request, obj, change_message)
                 # Redirect to sections index page.
                 return self.redirect_to_scaffold_index(request)
         # Exclude the node from the list of candidates...
-        other_secs = self.model.objects.exclude(pk=section_id)
+        other_secs = model.objects.exclude(pk=section_id)
         # ...then exclude descendants of the node being moved.
         other_secs = [n for n in other_secs if not n.is_descendant_of(obj)]
 
@@ -400,6 +406,7 @@ class SectionAdmin(admin.ModelAdmin):
         """        
         model = self.model
         opts = model._meta
+        
         rel_sort_key = allow_associated_ordering and 'order' or None
         try:
             obj = self.queryset(request).get(pk=unquote(section_id))
@@ -475,7 +482,7 @@ class SectionAdmin(admin.ModelAdmin):
             )
             inline_admin_formsets.append(inline_admin_formset)
             media = media + inline_admin_formset.media
-        content_type_id = ContentType.objects.get_for_model(self.model).id
+        content_type_id = ContentType.objects.get_for_model(model).id
         context = {
             'section': obj,
             'content_type_id': content_type_id,
@@ -501,9 +508,11 @@ class SectionAdmin(admin.ModelAdmin):
         have permissions to edit sections but still need to see all content 
         associated with a particular Section.
         """
+        model = self.model
+        
         try:
             obj = self.queryset(request).get(pk=unquote(section_id))
-        except self.model.DoesNotExist:
+        except model.DoesNotExist:
             # Don't raise Http404 just yet, because we haven't checked
             # permissions. We don't want an unauthenticated user to be able
             # to determine whether a given object exists.        
@@ -547,9 +556,11 @@ class SectionAdmin(admin.ModelAdmin):
         including subsections, but unlike related_content, this view allows 
         users to set the order of a particular section.
         """
+        model = self.model
+
         try:
             obj = self.queryset(request).get(pk=unquote(section_id))
-        except self.model.DoesNotExist:
+        except model.DoesNotExist:
             # Don't raise Http404 just yet, because we haven't checked
             # permissions. We don't want an unauthenticated user to be able
             # to determine whether a given object exists.        
