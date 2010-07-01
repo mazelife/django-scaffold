@@ -1,21 +1,45 @@
 {% extends "admin/change_list.html" %}
 {% load i18n %}
+
+
 {% block extrastyle %}
     {{ block.super }}
     <link rel="stylesheet" href="{{MEDIA_URL}}scaffold/styles/scaffold-admin.css" type="text/css" media="screen"/>
-    <link rel="stylesheet" href="{{MEDIA_URL}}scaffold/styles/jquery.treeview.css" type="text/css">
-    <script src="{{MEDIA_URL}}scaffold/scripts/jquery.js" type="text/javascript"></script>
-    <script src="{{MEDIA_URL}}scaffold/scripts/jquery.treeview.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="{{MEDIA_URL}}scaffold/styles/scaffold-listview.css" type="text/css" media="screen"/>
+    <script src="{{MEDIA_URL}}scaffold/scripts/jstree/_lib/jquery.js" type="text/javascript"></script>
+    <script src="{{MEDIA_URL}}scaffold/scripts/jstree/_lib/jquery.cookie.js" type="text/javascript"></script>
+    <script src="{{MEDIA_URL}}scaffold/scripts/jstree/jquery.jstree.min.js" type="text/javascript"></script>
+    <script src="{{MEDIA_URL}}scaffold/scripts/scaffold-listview.js" type="text/javascript"></script>
 {%endblock%}
+
+
 {% block breadcrumbs %}
 <div class="breadcrumbs">
       <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo;
       {{model_label|capfirst}}s
 </div>
 {% endblock %}
+
+
 {% block content %}
-{{node_list|safe}}
-<script type="text/javascript">
-$("#node-list").treeview()
-</script>
+    
+    {% block object-tools %}
+        <ul class="object-tools">
+            <li><a href="add-to/root/">{% trans "Add a top-level page" %}</a></li>
+        </ul>
+    {%endblock%}
+    
+    <div id="changelist" class="module">
+        <div id="toolbar">
+            <form id="changelist-search" action="" method="get">
+                <div>
+                    <label for="searchbar"><img src="/media/img/admin/icon_searchbox.png" alt="Search" /></label>
+                    <input type="text" size="40" name="q" value="" id="searchbar" />
+                    <input type="submit" value="Search" />
+                </div>
+            </form>
+        </div>
+        {{node_list|safe}}
+    </div>
+    
 {% endblock %}

@@ -47,13 +47,14 @@ class SectionAdmin(admin.ModelAdmin):
         super(SectionAdmin, self).__init__(*args, **kwargs)
     
     def get_urls(self):
+        
         from django.conf.urls.defaults import patterns, url
         
         def wrap(view):
             def wrapper(*args, **kwargs):
                 return self.admin_site.admin_view(view)(*args, **kwargs)
             return update_wrapper(wrapper, view)
-            
+        
         urls = super(SectionAdmin, self).get_urls()
         info = model_proxy._meta.app_label, model_proxy._meta.module_name
         return patterns('',
@@ -70,7 +71,6 @@ class SectionAdmin(admin.ModelAdmin):
                 wrap(self.order_content_view),
                 name='%s_%s_order' % info),                
         ) + urls
-    
     
     def has_view_permission(self, request):
         """
@@ -139,42 +139,44 @@ class SectionAdmin(admin.ModelAdmin):
 
         roots = model_proxy.get_root_nodes()
         link_html = _get_user_link_html(request)
-        node_list_html = '<ul id="node-list" class="treeview-red">'
+        link_html_fields = [name for name, html in link_html]
+        link_html_dict = dict(link_html)
 
         def crawl(node, admin_links=[]):
-            link_list =  " " + " | ".join(
-                [link_html[l] % node.pk for l in admin_links]
+            """
+            Nests a series of treebeard nodes in unordered lists
+            """
+            # Generate HTML for the current node
+            html = (
+                '<li id="node-%s"><span><a href=\"%s\">%s <small> &ndash; '
+                '/%s/</small></a></span><div class="links">%s</div>'
+            ) % (
+                node.id,
+                node.get_absolute_url(),
+                node.title, 
+                node.full_path,
+                " ".join([link_html_dict[l] % node.pk for l in admin_links])
             )
-            if node.is_leaf():
-                return "<li><a href=\"%s/\"><span>%s</span></a>%s</li>" % (
-                    node.pk,
-                    node.title, 
-                    link_list
-                )
-            else:
+            # Inject submenu of children, if applicable
+            if not node.is_leaf():
                 children = node.get_children()
-                html = "<li><a href=\"%s/\"><span>%s</span></a>%s<ul>" % (
-                    node.pk,
-                    node.title, 
-                    link_list
-                )        
-                html += "".join(
+                children = "".join(
                     map(partial(crawl, admin_links=admin_links), children)
                 )
-                return html + "</ul></li>"
+                html += "<ul>%s</ul>" % children
 
+            return html + "</li>"
 
         crawl_add_links = partial(
             crawl, 
-            admin_links=link_html.keys()
+            admin_links=link_html_fields
         )
+        
+        # Generate HTML
+        node_list_html = '<ul id="node-list">'
         node_list_html += "".join(map(crawl_add_links, roots))
-        if link_html.has_key('add_link'):        
-            node_list_html += (
-                '<li><a class="addlink" href="root/create/">'
-                'Add a top-level section.</a></li>'
-            )
         node_list_html += "</ul>"
+        
         context = {
             'node_list':node_list_html, 
             'title': "Edit %s" % self.app_context['app_label']
@@ -653,9 +655,11 @@ def _get_user_link_html(request):
     add_perm = app_label + "." + model_proxy._meta.get_add_permission()
     del_perm = app_label + "." + model_proxy._meta.get_delete_permission()
     if not request.user.has_perm(add_perm):
-        del link_html['add_link']
+        link_html = [(name, html) for name, html in  default \
+            if name != 'add_link'
+        ]
     if not request.user.has_perm(del_perm):
-        del link_html['del_link']
+        link_html = [(name, html) for name, html in  default \
+            if name != 'del_link'
+        ]
     return link_html
-
-

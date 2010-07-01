@@ -1,0 +1,116 @@
+.jstree-django{
+    padding: 0 !important;
+}
+.jstree-django li{
+    background-image:url("d.png");
+    background-repeat:no-repeat;
+    background-color:transparent;
+    position: relative;
+    margin-left: 0;
+}
+    .jstree-django li li{
+        margin-left: 36px;
+    }
+    .jstree-django li > ins{
+        position: absolute;
+        top: 0px;
+        left: 0;
+    }
+    .jstree-django li > span{
+        display: block;
+        background: #FFF url("bg_hover.gif") repeat-x bottom;
+        margin: -1px 0 -1px 24px;
+        padding: 7px 12px 0;
+        height: 24px;
+        font-size: 12px !important;
+        border: 1px solid #D0D0D0;
+    }
+        .jstree-django li > span.hover{
+            background-image: url(bg.gif);
+            color: #222;
+        }
+            .jstree-django li > span.hover small{
+                font-weight: normal;
+                color: #444;
+            }
+        .jstree-django li > span ins{
+            display: none;
+        }
+        .jstree-django li > span a{
+            color: #555;
+        }
+            .jstree-django li > span a small{
+                color: #777;
+            }
+            .jstree-django li > span a:hover{
+                text-decoration: underline;
+            }
+            .jstree-django li > span .jstree-search{
+                font-weight: bold;
+                color: #000;
+            }
+                .jstree-django li > span .jstree-search small{
+                    font-weight: normal;
+                }
+    .jstree-django li > .links{
+        position: absolute;
+        top: 1px;
+        right: 0;
+        height: 23px;
+        padding: 8px 12px 0;
+        border-left: 1px solid #E0E0E0;
+        background: rgba(238, 238, 238, 0.33);
+    }
+        .jstree-django li > .links ins{
+            display: none;
+        }
+        .jstree-django li > .links a{
+            float: left;
+            display: block;
+            padding-left: 20px;
+            height: 16px;
+            padding-right: 10px;
+            margin-right: 10px;
+            border-right: 1px solid #CCC;
+            background-image: url(icons.png);
+            background-repeat: no-repeat;
+            color: #444;
+        }
+            .jstree-django li > .links a.deletelink{
+                background-position: 0 -60px;
+            }
+            .jstree-django li > .links a.addlink{
+                background-position: 0 -30px;
+            }
+            .jstree-django li > .links a.listlink{
+                background-position: 0 -90px;
+            }
+            
+            .jstree-django li > .links a:hover{
+                text-decoration: underline;
+            }
+            .jstree-django li > .links a:last-child{
+                margin-right: 0;
+                padding-right: 0;
+                border-right: none;
+            }
+.jstree-django ins {
+    background-image:url("d.png");
+    background-repeat:no-repeat;
+    background-color:transparent;
+    height: 22px;
+    width: 22px;
+    display: block;
+}
+
+
+.jstree-django li {
+	background-position: -109px 0;
+	background-repeat:repeat-y;
+}
+	.jstree-django li.jstree-last{
+		background:transparent;
+	}
+.jstree-django .jstree-open > ins { background-position: -88px 0; }
+.jstree-django .jstree-closed > ins { background-position: -67px 0; }
+.jstree-django .jstree-leaf > ins { background-position: -46px 0; }

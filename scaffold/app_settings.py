@@ -21,20 +21,24 @@ EXTENDING_MODEL_PATH = _get_setting('EXTENDING_MODEL_PATH',
     default = "%s.models.Section" % EXTENDING_APP_NAME
 )
 
-LINK_HTML = _get_setting('LINK_HTML', default={
-    'add_link': (
+LINK_HTML = _get_setting('LINK_HTML', default=(
+    ('edit_link', (
+        "<a class=\"changelink\" href=\"%s/\">"
+        "edit</a>"
+    ),),
+    ('add_link', (
         "<a class=\"addlink\" href=\"%s/create/\">"
         "add child</a>"
-    ),
-    'del_link': (
+    ),),
+    ('del_link', (
         "<a class=\"deletelink\" href=\"%s/delete/\">"
         "delete</a>" 
-    ),
-    'list_link': (
-        "<a class=\"changelink\" href=\"%s/related/\">"
+    ),),
+    ('list_link', (
+        "<a class=\"listlink\" href=\"%s/related/\">"
         "list content</a>" 
-    )
-})
+    ),)
+))
 
 PATH_CACHE_TTL = _get_setting('PATH_CACHE_TTL',
     default = (60 * 60 * 12)

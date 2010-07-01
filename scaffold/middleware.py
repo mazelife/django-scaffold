@@ -55,17 +55,31 @@ def get_current_section():
         )
     return getattr(_thread_locals, 'section', None)
 
-def lookup_section_from_request(request):
+def lookup_section(lookup_from):
     Section = app_settings.get_extending_model()
-    path_map = _get_section_path_map()
-    section_paths = path_map.keys()
-    # Sort by shortest path to longest.
-    section_paths.sort(lambda x, y: len(x) <= len(y) and 1 or -1)
-    matches = [p for p in section_paths if request.path.startswith(p)]
-    if len(matches) >= 1:
-        return Section.objects.get(slug=path_map[matches[0]])
+    if lookup_from.__class__.__name__ == "WSGIRequest":
+        path_map = _get_section_path_map()
+        section_paths = path_map.keys()
+        # Sort by shortest path to longest.
+        section_paths.sort(lambda x, y: len(x) <= len(y) and 1 or -1)
+        
+        # Strips leading and trailing slashes
+        path = lookup_from.path
+        if path.startswith('/'):
+            path = path[1:]
+        if path.endswith('/'):
+            path = path[:-1]
+
+        matches = [p for p in section_paths if path.startswith(p)]
+        if len(matches) >= 1:
+            return Section.objects.get(slug=path_map[matches[0]])
+        else:
+            return None
     else:
-        return None
+        try:
+            return Section.objects.get(pk=int(lookup_from))
+        except Section.DoesNotExist:
+            return None
 
 class SectionsMiddleware(object):
     """
@@ -74,7 +88,7 @@ class SectionsMiddleware(object):
     """
     
     def process_request(self, request):
-        section = lookup_section_from_request(request)
+        section = lookup_section(request)
         _thread_locals.scaffold_middleware_enabled = True
         _thread_locals.section = section
 

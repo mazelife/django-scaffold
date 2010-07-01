@@ -19,6 +19,6 @@ Django-scaffolding uses the following javascript libraries (these are included i
 
 * `jQuery <http://jquery.com>`_
 * `jQuery UI <http://jqueryui.com/>`_
-* `jQuery Treeview <http://bassistance.de/jquery-plugins/jquery-plugin-treeview/>`_
+* `jstree <http://jstree.com/>`_
 
 This project is licensed under BSD License.
