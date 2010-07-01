@@ -50,17 +50,14 @@ Change the default urls.py file for your Django project to the following::
     from django.contrib import admin
     admin.autodiscover()
     urlpatterns = patterns('',
-        (r'^admin/sections/section/', include('scaffold.admin_urls', 
-            namespace="scaffold"
-        )),
         (r'^admin/', include(admin.site.urls)),
         url(r'^(?P<section_path>.+)/$', 'scaffold.views.section', name="section"),
     )
 
 
-We've done a couple things here. First, we've enabled the admin app by uncommenting the lines which turn on autodiscover and route ``/admin/`` urls to the admin app. Then we've inserted a line **above** the ``^admin/`` url configuration which route urls sepcific to our new app to a different url conf that is used for the scaffold admin views.
+We've done a couple things here. First, we've enabled the admin app by uncommenting the lines which turn on autodiscover and route ``/admin/`` urls to the admin app. That takes care of the admin interface and allows us to manage a sections/subsections tree in the admin (Scaffold provides a number of admin views to manage your models, but these are all handled in a special ``ModelAdmin`` class called ``SectionAdmin`` and do not need to be specially referenced in your URL conf.)
 
-That takes care of the admin interface and allows us to manage a sections/subsections tree in the admin. But how will we actually view a section or subsection on the website? The final url pattern handles this::
+But how will we actually view a section or subsection on the website? The second url pattern handles this::
 
         url(r'^(?P<section_path>.+)/$', 'scaffold.views.section', name="section")
         
@@ -70,7 +67,7 @@ Like almost everything about scaffold, you are not required to use this pattern.
         
 .. admonition:: Note
 
-    The positioning of the url patterns here is very deliberate. The regular         expression '^(?P<section_path>.+)/$' is rather  greedy and will match anything, therefore we put it last. Conversely, the regular expression '^admin/sections/section/' is more specific than the '^admin/' expression, so we place it first to ensure that it overrides the standard admin pages for our app.
+    The positioning of the url patterns here is very deliberate. The regular         expression '^(?P<section_path>.+)/$' is rather  greedy and will match anything, therefore we put it last. 
 
 4. Register your Section model in the admin site
 ----------------------------------------------------
@@ -82,6 +79,10 @@ Create an admin.py file in your concrete application and register your new ``Sec
     from scaffold.admin import SectionAdmin
 
     admin.site.register(Section, SectionAdmin)
+    
+.. admonition:: Note
+
+You'll notice that we're registering our concrete model with the admin site using the ``SectionAdmin`` class in django-scaffold. This step is crucial if you want scaffold to work properly in the admin interface. The standard ``admin.ModelAdmin`` class does not provide the special properties and views needed to manage scaffold's concrete models. 
 
 
 5. Add the necessary project settings
@@ -98,6 +99,6 @@ Note: this example assumes your concrete app is called `sections`. Use whatever 
 6. Make the the scaffold media available. 
 ------------------------------------------
 
-Django-scaffold has a number of CSS, JavaScript and image files which it uses in the admin interface. These are stored in media/scaffold in the scaffold application directory. You can copy scaffold from it's media directory to your own project's media directory, but it's best to simply create a symlink instead. (Make sure, if you're using apache to server this, you have the ``Options FollowSymLinks`` directive in place.)
+Django-scaffold has a number of CSS, JavaScript and image files which it uses in the admin interface. These are stored in media/scaffold in the scaffold application directory. You can copy the ``scaffold`` folder from the scaffold media directory to your own project's media directory, but it's best to simply create a symlink instead. (Make sure, if you're using apache to server this, you have the ``Options FollowSymLinks`` directive in place.)
 
 At this point, you should be able to start up your Django project, browse to the admin interface and start creating sections.

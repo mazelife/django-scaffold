@@ -18,9 +18,6 @@ But, let's say you want a simpler scheme, with URLs like ``"/sections/local/"`` 
     from django.contrib import admin
     admin.autodiscover()
     urlpatterns = patterns('',
-        (r'^admin/sections/section/', include('scaffold.admin_urls', 
-            namespace="scaffold"
-        )),
         (r'^admin/', include(admin.site.urls)),
         url(r'^(?P<section_path>.+)/$', 'scaffold.views.section', name="section"),
     )
@@ -29,9 +26,6 @@ Now we can make the urlpatterns look like this::
 
     urlpatterns = patterns('',
         url(r'^sections/(?P<slug>[\w-]+)/?$', 'scaffold.views.section', name="section"),
-        (r'^admin/sections/section/', include('scaffold.admin_urls', 
-            namespace="scaffold"
-        )),
         (r'^admin/', include(admin.site.urls)),
     )
 
@@ -42,9 +36,6 @@ The one problem is that we aren't passing scaffold.views.section the arguments i
 
     urlpatterns = patterns('',
         url(r'^sections/(?P<slug>[\w-]+)/?$', 'sections.views.section'),
-        (r'^admin/sections/section/', include('scaffold.admin_urls', 
-            namespace="scaffold"
-        )),
         (r'^admin/', include(admin.site.urls)),
     )
 
@@ -84,14 +75,24 @@ We're still using scaffold's template, but this is probably one of the first thi
 Customizing the Admin
 -------------------------
 
-One of scaffold's best features is it's integration with the Django admin. Even this, however, is customizable. One of the reasons scaffold has a ``views`` module *and* a ``admin_views`` module is that it's highly likely you'll need to customize your application's public views, but not the admin ones. But if you do want to override the admin views, go for it. (Just keep in mind the admin_views module is just under 500 lines of code.)::
+One of scaffold's best features is it's integration with the Django admin. Even this, however, is customizable. All scaffold admin views are located in the ``scaffold.admin.SectionAdmin`` class. Besides custom versions of the usual admin views, (change list, change object, add object, and delete object) scaffold provides views to move nodes in the tree, view all content attached to a node, and and order content attached to a node. Read the Django documentation to find out more about `how to customize <http://docs.djangoproject.com/en/dev/ref/contrib/admin>`_ a model admin. 
 
-  urlpatterns = patterns('',
-      url(r'^sections/(?P<slug>[\w-]+)/?$', 'sections.views.section'),
-      (r'^admin/sections/section/', include('sections.admin_urls', 
-          namespace="scaffold"
-      )),
-      (r'^admin/', include(admin.site.urls)),
-  )
+Note that most customizations possible for the ``ModelAdmin`` class are possible for ``SectionsAdmin``, although a few are ignore because of differences in the UI.
+
+Unspported ``ModelAdmin`` Options
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* ``date_hierarchy``
+* ``list_display``
+* ``list_editable``
+* ``list_filter``
+* ``list_per_page``
+* ``list_select_related``
+* ``ordering``
+* ``save_on_top``
+* ``search_fields``
+* ``actions``
+
+
 
 
