@@ -20,6 +20,7 @@ from django.views.generic import simple
 
 from forms import SectionForm
 import app_settings
+
 app_name =  app_settings.EXTENDING_APP_NAME
 allow_associated_ordering = app_settings.ALLOW_ASSOCIATED_ORDERING
 model_proxy = app_settings.get_extending_model()
@@ -34,17 +35,6 @@ class SectionAdmin(admin.ModelAdmin):
     form = SectionForm
     list_per_page = 10
     template_base = "scaffold/admin/"
-    
-    def __init__(self, *args, **kwargs):
-        from admin_urls import urlpatterns       
-        for regex_URL_pattern in urlpatterns:
-            if regex_URL_pattern.name == 'related_content':
-                regex_URL_pattern.default_args = {
-                    'list_per_page': self.list_per_page
-                }
-        self.urlpatterns = urlpatterns
-        self.url_map = dict([(p.name, p.callback) for p in urlpatterns])
-        super(SectionAdmin, self).__init__(*args, **kwargs)
     
     def get_urls(self):
         
