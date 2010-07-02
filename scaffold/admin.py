@@ -117,6 +117,14 @@ class SectionAdmin(admin.ModelAdmin):
             permanent=False
         )
     
+    def get_changelist_repr(self, node):
+        """
+        A method that takes a node in the tree and returns a string
+        representation for the changelist view.
+        """
+        html = '<span><a href="%s">%s <small> &ndash; /%s/</small></a></span>'
+        return html % (node.get_absolute_url(), node.title, node.full_path)
+    
     def changelist_view(self, request):
         """
         Display a tree of section and subsection nodes.
@@ -141,13 +149,10 @@ class SectionAdmin(admin.ModelAdmin):
             """
             # Generate HTML for the current node
             html = (
-                '<li id="node-%s"><span><a href=\"%s\">%s <small> &ndash; '
-                '/%s/</small></a></span><div class="links">%s</div>'
+                '<li id="node-%s">%s<div class="links">%s</div>'
             ) % (
                 node.id,
-                node.get_absolute_url(),
-                node.title, 
-                node.full_path,
+                self.get_changelist_repr(node),
                 " ".join([link_html_dict[l] % node.pk for l in admin_links])
             )
             # Inject submenu of children, if applicable
