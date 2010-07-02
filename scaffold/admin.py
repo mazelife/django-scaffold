@@ -483,13 +483,17 @@ class SectionAdmin(admin.ModelAdmin):
             inline_admin_formsets.append(inline_admin_formset)
             media = media + inline_admin_formset.media
         content_type_id = ContentType.objects.get_for_model(model).id
+        page_title = "Editing %s '%s'" % (
+            self.app_context['model_label'].title(),
+            obj.title
+        )
         context = {
             'section': obj,
             'content_type_id': content_type_id,
             'form': adminForm,
             'inline_admin_formsets': inline_admin_formsets,
             'media': mark_safe(media),
-            'title': "Edit %s '%s'" % (obj.type, obj.title),
+            'title': page_title,
             'related_content': _get_content_table(obj, 
                 sort_key=rel_sort_key
             ),

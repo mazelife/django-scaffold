@@ -8,7 +8,7 @@
 <div class="breadcrumbs">
       <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo; 
       <a href="{{changelist_url}}">{{app_label|capfirst}}</a> &rsaquo;
-      {%trans "Edit"%} <em>{{model_label|capfirst}}</em>
+      {%trans "Editing"%} {{model_label|capfirst}}
 
 </div>
 {% endblock %}
@@ -21,11 +21,6 @@
 </ul>
 {%endblock%}
 <div id="content-main">
-    {%ifnotequal section.depth 1%}
-    <p class="note">You are editing a subsection.</p>
-    {%else%}
-    <p class="note">You are editing a section.</p>
-    {%endifnotequal%}
     <form enctype="multipart/form-data" action="" method="post" id="{{ opts.module_name }}_form">    
         {% for fieldset in form %}
             {% include "scaffold/admin/includes/fieldset.html" %}
