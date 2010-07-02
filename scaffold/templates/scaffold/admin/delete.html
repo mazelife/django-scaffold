@@ -19,17 +19,17 @@
 {% endblock %}
 {% block content %}
 <h2>Are you sure?</h2>
-<p>Are you sure you want to delete the {{section.type}} <strong>{{section.title}}</strong> permanently?</p>
+<p>Are you sure you want to delete the {{model_label}} <strong>{{section.title}}</strong> permanently?</p>
 {%if not section.is_leaf%}
 {%with section.get_descendants as descendants%} 
 <div class="errornote">
-    <p><strong>Warning!</strong> This {{section.type}} contains {{descendants|length}} other subsection{{descendants|length|pluralize}}:</p>
+    <p><strong>Warning!</strong> This {{model_label}} contains {{descendants|length}} other sub-{{model_label}}{{descendants|length|pluralize}}:</p>
     <ul>
     {%for subsection in descendants%}
         <li>{{subsection.title}}</li>
     {%endfor%}
     </ul>
-    <p>If you delete the {{section.type}} "{{section.title}}", {{descendants|length|pluralize:"this subsection,these subsections"}} will be deleted as well!</p>
+    <p>If you delete the {{model_label}} "{{section.title}}", {{descendants|length|pluralize:"this,these"}} {{model_label}}{{descendants|length|pluralize}} will be deleted as well!</p>
 </div>
 {%endwith%}
 {%endif%}
