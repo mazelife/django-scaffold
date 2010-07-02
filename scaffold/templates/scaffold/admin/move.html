@@ -17,17 +17,17 @@
 {% endblock %}
 {% block content %}
 <div class="sections-preview">
-<h4>Current Section Structure:</h4>
+<h4>Current {{model_label|capfirst}} Structure:</h4>
 {{preview|safe}}
 </div>
 <form action="" method="POST" class="move-section">
-<label>Make this section a 
+<label>Make this {{model_label}} a &nbsp;
     <select name="relationship">
         <option value="neighbor">Neighbor</option>
         <option value="child">Child</option>
     </select>
 <label>
-<label> of 
+<label> of &nbsp;
     <select name="to">
         {%for n in tree%}
         <option value="{{n.id}}">{{n}}</option>

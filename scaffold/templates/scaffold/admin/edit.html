@@ -31,15 +31,15 @@
         {% endfor %}        
         
         <div class="submit-row">
-        <a class="button left" href="move/">Move this {%ifnotequal section.depth 1%}subsection{%else%}section{%endifnotequal%} &raquo;</a>
+        <a class="button left" href="move/">Move this {{model_label}} &raquo;</a>
         {%if allow_associated_ordering%}
-        <a class="button left" href="order/">Order this {%ifnotequal section.depth 1%}subsection{%else%}section{%endifnotequal%}'s content &raquo;</a>
+        <a class="button left" href="order/">Order this {{model_label}}'s content &raquo;</a>
         {%endif%}
         <input type="submit" name="_save" class="default" value="Save">
         </div>
     </form>
 
-    <h2>Items Belonging to this {{section.type}}</h2>
+    <h2>Items Belonging to this {{model_label}}:</h2>
     <table class="related-content">
     <thead>
         <tr>
