@@ -460,6 +460,11 @@ class SectionAdmin(admin.ModelAdmin):
                     formsets
                 )
                 self.log_change(request, new_object, change_message)
+                if request.POST.has_key("_continue"):
+                    return self.redirect_to_object_changeform(
+                        request, 
+                        new_object
+                    )
                 return self.redirect_to_scaffold_index(request)
         else:
             form = ModelForm(instance=obj)
