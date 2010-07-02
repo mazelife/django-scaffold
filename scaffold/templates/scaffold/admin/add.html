@@ -14,7 +14,7 @@
 {%endblock%}
 {%block content%}
 {%if parent%}
-<p>{%trans "Belonging to:"%} {{parent.type}} <em>{{parent.title}}</em></p>
+<p>{%trans "Belonging to:"%} {{model_label}} <em>{{parent.title}}</em></p>
 <form enctype="multipart/form-data" action="" method="post">
 {%else%}
 <form enctype="multipart/form-data" action="" method="post">
@@ -43,10 +43,11 @@
     {%if parent.has_children%}
     {%with parent.get_children as children%}
     <fieldset class="position-node ui-state-highlight ui-corner-all">
-    <legend>{%trans "Position New Section"%}</legend>
-    <p class="notice">'{{parent.title}}' already has {{children|pluralize:"a subsection,some subsections"}} 
-    ({%for child in children%}<em>{{child.title}}</em>{%if not forloop.last%}, {%endif%}{%endfor%} )
-    . How do you want to position this new section in relation to {{children|pluralize:"it,them"}}?</p>
+    <legend>Position New {{model_label|capfirst}}</legend>
+    <p class="notice">The {{model_label}} that you're adding this new {{model_label}} to already has 
+        {{children|pluralize:"a,some"}} sub-{{model_label}}{{children|pluralize}} 
+    ({%for child in children%}<em>{{child.title}}</em>{%if not forloop.last%}, {%endif%}{%endfor%} ).
+     How do you want to position this new section in relation to {{children|pluralize:"it,them"}}?</p>
     <label>Add this subsection 
         <select name="position">
             <option value="after">after</option>
