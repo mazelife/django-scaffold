@@ -1,5 +1,6 @@
 from copy import copy
 from functools import partial
+import operator
 
 from django.contrib import admin
 from django.contrib.admin import helpers
@@ -549,7 +550,7 @@ class SectionAdmin(admin.ModelAdmin):
             'section': obj,
             'sort': sort,
             'related_content': content_table,
-            'title': "'%s' related content" % obj.title,
+            'title': "Content related to '%s'" % obj.title,
         }
         return self.render_scaffold_page(request, 'related_content.html', ctxt)
 
