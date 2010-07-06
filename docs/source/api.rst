@@ -10,10 +10,19 @@ The following methods are provided by ``scaffold.models.BaseSection``:
 .. autoclass:: scaffold.models.BaseSection
     :members: type,get_first_populated_field,get_related_content,get_subsections,get_associated_content
 
-Views
+Admin
 =====
 
-The sections application contains the following views. Of these views, only the func::section view is publicly available. 
+The sections application contains the following views.
 
-.. automodule:: scaffold.admin_views
+.. autoclass:: scaffold.admin.SectionAdmin
     :members:
+
+Middleware
+============
+
+Use the middleware if you need access to the section outside the view context.
+
+.. automodule:: scaffold.middleware
+    :members:
+    :undoc-members:
