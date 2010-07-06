@@ -78,11 +78,18 @@ class SectionAdmin(admin.ModelAdmin):
     
     @property
     def app_context(self):
-        info = self.model._meta.app_label, model_proxy._meta.module_name
+        """
+        Returns a dictionary containing the app name, model name, plural model 
+        name and changelist (index) url.
+        """
+        meta = self.model._meta
         return {
-            'app_label': info[0],
-            'model_label': info[1],
-            'changelist_url': reverse('admin:%s_%s_changelist' % info),
+            'app_label': meta.app_label,
+            'module_label': meta.module_name,
+            'model_label': meta.verbose_name,
+            'model_label_plural': unicode(meta.verbose_name_plural),
+            'changelist_url': reverse('admin:%s_%s_changelist' % 
+            (meta.app_label, meta.module_name)),
         }
     
     def render_scaffold_page(self, request, template, context):
@@ -98,7 +105,8 @@ class SectionAdmin(admin.ModelAdmin):
     
     def redirect_to_scaffold_index(self, request):
         """Redirect to the change list page of your model."""
-        redirect_url = reverse('admin:%(app_label)s_%(model_label)s_changelist'
+        redirect_url = reverse(
+            'admin:%(app_label)s_%(module_label)s_changelist'
             % self.app_context
         )
         return simple.redirect_to(request,
@@ -109,7 +117,7 @@ class SectionAdmin(admin.ModelAdmin):
     def redirect_to_object_changeform(self, request, obj):
         """Redirect to the change form of the given object."""
         redirect_url = reverse(
-            'admin:%(app_label)s_%(model_label)s_change' % self.app_context, 
+            'admin:%(app_label)s_%(module_label)s_change' % self.app_context, 
              args=(obj.pk,)
         )
         return simple.redirect_to(request,
@@ -177,7 +185,7 @@ class SectionAdmin(admin.ModelAdmin):
         
         context = {
             'node_list':node_list_html, 
-            'title': "Edit %s" % self.app_context['app_label']
+            'title': "Edit %s" % self.app_context['model_label_plural']
         }
         return self.render_scaffold_page(request, 'index.html', context)
         
