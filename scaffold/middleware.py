@@ -88,6 +88,10 @@ class SectionsMiddleware(object):
     """
     
     def process_request(self, request):
+        """
+        Determine the section from the request and store it in the currently 
+        executing thread where anyone can grab it (remember, in Django, 
+        there's one request per thread)."""
         section = lookup_section(request)
         _thread_locals.scaffold_middleware_enabled = True
         _thread_locals.section = section
