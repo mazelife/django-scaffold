@@ -50,17 +50,17 @@ class BaseSection(MP_Node):
     def get_first_populated_field(self, field_name):
         """
         Returns the first non-empty instance of the given field in the 
-        sections tree. Will crawl from leaf to root, returning None if no 
+        sections tree. Will crawl from leaf to root, returning ``None`` if no 
         non-empty field is encountered.
         """
         assert hasattr(self, field_name), "Field name does not exist."
         node = self
         if getattr(node, field_name, None):
-                return getattr(node, field_name)
+            return getattr(node, field_name)
         while not node.is_root():
             node = node.get_parent()
             if getattr(node, field_name, None):
-                    return getattr(node, field_name)            
+                return getattr(node, field_name)            
         return None
     
     def get_related_content(self, sort_fields=[], infer_sort=False):
