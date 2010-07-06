@@ -1,7 +1,6 @@
 {% extends "admin/change_list.html" %}
 {% load i18n %}
 
-
 {% block extrastyle %}
     {{ block.super }}
     <link rel="stylesheet" href="{{MEDIA_URL}}scaffold/styles/scaffold-admin.css" type="text/css" media="screen"/>
@@ -12,23 +11,19 @@
     <script src="{{MEDIA_URL}}scaffold/scripts/scaffold-listview.js" type="text/javascript"></script>
 {%endblock%}
 
-
 {% block breadcrumbs %}
 <div class="breadcrumbs">
       <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo;
-      {{model_label|capfirst}}s
+      {{app_label|capfirst}}
 </div>
 {% endblock %}
 
-
-{% block content %}
-    
+{% block content %}    
     {% block object-tools %}
         <ul class="object-tools">
             <li><a href="root/create/">{% trans "Add a top-level page" %}</a></li>
         </ul>
     {%endblock%}
-    
     <div id="changelist" class="module">
         <div id="toolbar">
             <form id="changelist-search" action="" method="get">
@@ -41,5 +36,4 @@
         </div>
         {{node_list|safe}}
     </div>
-    
 {% endblock %}

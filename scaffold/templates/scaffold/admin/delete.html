@@ -14,7 +14,7 @@
 <div class="breadcrumbs">
       <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo; 
       <a href="{{changelist_url}}">{{app_label|capfirst}}</a> &rsaquo;
-     {% trans 'Delete'%} {{model_label|capfirst}} <em>{{section.title}}</em>
+     {% trans 'Delete'%} {{model_label}} <em>{{section.title}}</em>
 </div>
 {% endblock %}
 {% block content %}
@@ -23,13 +23,20 @@
 {%if not section.is_leaf%}
 {%with section.get_descendants as descendants%} 
 <div class="errornote">
-    <p><strong>Warning!</strong> This {{model_label}} contains {{descendants|length}} other sub-{{model_label}}{{descendants|length|pluralize}}:</p>
+    <p>
+        <strong>Warning!</strong> This {{model_label}} contains {{descendants|length}} other 
+        sub-{%ifequal descendants|length 1%}{{model_label}}{%else%}{{model_label_plural}}{%endifequal%}:
+    </p>
     <ul>
     {%for subsection in descendants%}
         <li>{{subsection.title}}</li>
     {%endfor%}
     </ul>
-    <p>If you delete the {{model_label}} "{{section.title}}", {{descendants|length|pluralize:"this,these"}} {{model_label}}{{descendants|length|pluralize}} will be deleted as well!</p>
+    <p>
+        If you delete the {{model_label}} "{{section.title}}", {{descendants|length|pluralize:"this,these"}} 
+        {%ifequal descendants|length 1%}{{model_label}}{%else%}{{model_label_plural}}{%endifequal%} will be 
+        deleted as well!
+    </p>
 </div>
 {%endwith%}
 {%endif%}
