@@ -15,6 +15,7 @@ Contents:
    Customizing scaffold <customizing>
    Available settings <settings.rst>
    Customizing the admin interface <admin>
+   Api <api>
 
 Indices and tables
 ==================
