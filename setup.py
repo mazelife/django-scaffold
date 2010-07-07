@@ -3,10 +3,10 @@
 import os
 from distutils.core import setup
 
-version = '0.2.2'
+version = '0.3'
 
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: BSD License",
     "Programming Language :: Python",
