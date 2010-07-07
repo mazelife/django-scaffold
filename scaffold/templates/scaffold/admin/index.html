@@ -13,15 +13,16 @@
 
 {% block breadcrumbs %}
 <div class="breadcrumbs">
-      <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo;
-      {{app_label|capfirst}}
+    <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo; 
+    <a href="{{app_index_url}}">{{app_label|capfirst}}</a> &rsaquo;      
+    {{model_label_plural|capfirst}}
 </div>
 {% endblock %}
 
 {% block content %}    
     {% block object-tools %}
         <ul class="object-tools">
-            <li><a href="root/create/">{% trans "Add a top-level page" %}</a></li>
+            <li><a href="root/create/">{% trans "Add a top-level" %} {{model_label}}</a></li>
         </ul>
     {%endblock%}
     <div id="changelist" class="module">

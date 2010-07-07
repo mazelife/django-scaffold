@@ -12,7 +12,7 @@
 <div class="breadcrumbs">
     <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo; 
     <a href="{{app_index_url}}">{{app_label|capfirst}}</a> &rsaquo;      
-    <a href="{{changelist_url}}">{{model_label|capfirst}}</a> &rsaquo;
+    <a href="{{changelist_url}}">{{model_label_plural|capfirst}}</a> &rsaquo;
     <a href="{{changelist_url}}{{obj.pk}}/">{{obj.title}}</a> &rsaquo;
     {% trans 'Related content'%}</em>
 </div>
