@@ -7,17 +7,15 @@
 {% block breadcrumbs %}
 <div class="breadcrumbs">
       <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo; 
-      <a href="{{changelist_url}}">{{app_label|capfirst}}</a> &rsaquo;
-      {%trans "Editing"%} {{model_label|capfirst}}
-
+      <a href="{{app_index_url}}">{{app_label|capfirst}}</a> &rsaquo;      
+      <a href="{{changelist_url}}">{{model_label|capfirst}}</a> &rsaquo;
+      {{obj.title}}
 </div>
 {% endblock %}
-???
-
 {% block content %}
 {% block object-tools %}
 <ul class="object-tools">
-        <li><a href="../../../r/{{ content_type_id }}/{{ section.pk }}/" class="viewsitelink">{% trans "View on site" %}</a></li>
+        <li><a href="../../../r/{{ content_type_id }}/{{ object.pk }}/" class="viewsitelink">{% trans "View on site" %}</a></li>
 </ul>
 {%endblock%}
 <div id="content-main">
@@ -60,7 +58,7 @@
             <td><a class="changelink" href="{{edit_url}}">Edit</a></td>
         </tr>
     {%empty%}
-        <tr><td colspan="3">No objects assigned to the section.</td></tr>
+        <tr><td colspan="3">No objects assigned to the {{model_label}}.</td></tr>
     {%endfor%}
     </tbody>
     </table>

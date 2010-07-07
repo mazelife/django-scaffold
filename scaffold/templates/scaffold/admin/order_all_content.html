@@ -10,13 +10,15 @@
 {%endblock%}
 {% block breadcrumbs %}
 <div class="breadcrumbs">
-      <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo; 
-       <a href="{{changelist_url}}">{{app_label|capfirst}}</a> &rsaquo;
-      {%trans "Order content for the"%} {{model_label|capfirst}} <em>{{section.title}}</em>
+    <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo; 
+    <a href="{{app_index_url}}">{{app_label|capfirst}}</a> &rsaquo;      
+    <a href="{{changelist_url}}">{{model_label|capfirst}}</a> &rsaquo;
+    <a href="{{changelist_url}}{{obj.pk}}/">{{obj.title}}</a> &rsaquo;
+    {% trans 'Order content'%}
 </div>
 {% endblock %}
 {% block content %}
-<p>The following items belong to the <em>{{section.title}}</em> {{model_label}}. Drag and drop the objects to place them in the correct order.</p> 
+<p>The following items belong to the <em>{{obj.title}}</em> {{model_label}}. Drag and drop the objects to place them in the correct order.</p> 
 <form action="" method="POST">
     <ul id="sortable">
     {%for item, date, app, obj, relationship_type, order in related_content%}

@@ -227,7 +227,7 @@ class SectionTest(TestCase):
         # Now move the section...
         admin_urls = self.get_admin_urls(foobar)
         response = self.client.get(admin_urls['move'])
-        self.assertEqual(response.context['section'].pk, foobar.pk)
+        self.assertEqual(response.context['obj'].pk, foobar.pk)
         # ... first with an incorrect reltionship field...
         response = self.client.post(admin_urls['move'], {
             'relationship': 'sibling', 
@@ -295,7 +295,7 @@ class SectionTest(TestCase):
         test_section = TestSection.objects.get(slug="41")
         admin_urls = self.get_admin_urls(test_section)
         response = self.client.get(admin_urls['change'])
-        self.assertEqual(response.context['section'].slug, test_section.slug)      
+        self.assertEqual(response.context['obj'].slug, test_section.slug)      
         response = self.client.post(admin_urls['change'], {
             'slug': '41b',
             'title': 'Forty One B',

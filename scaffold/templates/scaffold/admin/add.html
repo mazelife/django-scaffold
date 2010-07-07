@@ -7,9 +7,10 @@
 {%endblock%}
 {%block breadcrumbs%}
 <div class="breadcrumbs">
-      <a href="{%url admin:index%}">{%trans "Home"%}</a> &rsaquo; 
-      <a href="{{changelist_url}}">{{app_label|capfirst}}</a> &rsaquo;
-      {%trans "Add"%} {{model_label|capfirst}}
+    <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo; 
+    <a href="{{app_index_url}}">{{app_label|capfirst}}</a> &rsaquo;      
+    <a href="{{changelist_url}}">{{model_label|capfirst}}</a> &rsaquo;
+    {%trans "Add"%} {{model_label}}
 </div>
 {%endblock%}
 {%block content%}

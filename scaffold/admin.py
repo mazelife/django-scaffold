@@ -84,6 +84,7 @@ class SectionAdmin(admin.ModelAdmin):
         """
         meta = self.model._meta
         return {
+            'app_index_url': reverse('admin:app_list', args=(meta.app_label,)),
             'app_label': meta.app_label,
             'module_label': meta.module_name,
             'model_label': meta.verbose_name,
@@ -195,7 +196,7 @@ class SectionAdmin(admin.ModelAdmin):
         never be done without context (i.e. where in the tree the new node is
         to be positioned). Therefore, the "add" links that appear on the index
         of the admin site will not work, hence this redirect to the model 
-        chnageform when it's clicked.
+        changeform when it's clicked.
         """
         return self.redirect_to_scaffold_index(request)
 
@@ -287,7 +288,7 @@ class SectionAdmin(admin.ModelAdmin):
             'form': adminForm,
             'has_fieldsets': has_fieldsets,
             'media': media,
-            'title': "New %s" % (parent and "subsection" or "section"),
+            'title': "Add %s" % self.app_context['model_label'],
         }
         return self.render_scaffold_page(request, "add.html", 
             context
@@ -318,8 +319,8 @@ class SectionAdmin(admin.ModelAdmin):
             self.log_deletion(request, obj, obj.title)
             return self.redirect_to_scaffold_index(request)
         context = {
-            'section': obj, 
-            'title': "Delete '%s'" % obj.title
+            'obj': obj, 
+            'title': "Delete %s" % self.app_context['model_label']
         }
         return self.render_scaffold_page(request,           
             "delete.html", context
@@ -404,9 +405,9 @@ class SectionAdmin(admin.ModelAdmin):
         tree_html = '<ul id="node-list" class="treeview-red">%s</ul>'
         tree_html = tree_html % ("".join(map(crawl, root_nodes)))
         context = {
-            'section': obj,
+            'obj': obj,
             'tree': other_secs,
-            'title': "Move %s '%s'" % (obj.type, obj.title),
+            'title': "Move %s" % self.app_context['model_label'],
             'preview': tree_html
         }
         return self.render_scaffold_page(request,
@@ -502,12 +503,9 @@ class SectionAdmin(admin.ModelAdmin):
             inline_admin_formsets.append(inline_admin_formset)
             media = media + inline_admin_formset.media
         content_type_id = ContentType.objects.get_for_model(model).id
-        page_title = "Editing %s '%s'" % (
-            self.app_context['model_label'].title(),
-            obj.title
-        )
+        page_title = "Change %s" % self.app_context['model_label'].title()
         context = {
-            'section': obj,
+            'obj': obj,
             'content_type_id': content_type_id,
             'form': adminForm,
             'inline_admin_formsets': inline_admin_formsets,
@@ -564,13 +562,17 @@ class SectionAdmin(admin.ModelAdmin):
             content_table = paginated_content.page(page)
         except (EmptyPage, InvalidPage):
             content_table = paginated_content.page(paginated_content.num_pages)
-        ctxt = {
-            'section': obj,
+        context = {
+            'obj': obj,
             'sort': sort,
             'related_content': content_table,
-            'title': "Content related to '%s'" % obj.title,
+            'title': "Related %s content" % self.app_context['model_label'],
         }
-        return self.render_scaffold_page(request, 'related_content.html', ctxt)
+        return self.render_scaffold_page(
+            request,
+            'related_content.html',
+            context
+        )
 
 
     def order_content_view(self, request, section_id):
@@ -620,11 +622,9 @@ class SectionAdmin(admin.ModelAdmin):
             # Redirect to sections index page.     
             return self.redirect_to_scaffold_index(request)
         context = {
-            'section': obj,
+            'obj': obj,
             'related_content': content_table,
-            'title': "Order Content for \"%s\"" % (
-                obj.title, 
-            )
+            'title': "Order %s content" % self.app_context['model_label']
         }
         return self.render_scaffold_page(request, "order_all_content.html",
             context
