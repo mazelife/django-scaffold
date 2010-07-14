@@ -652,7 +652,10 @@ def _get_content_table(obj, sort_key=None):
     content_table = []
     for item, app, model, relationship_type in related_content:
         edit_url = "admin:%s_%s_change" % (app, model.lower())
-        edit_url = reverse(edit_url, args=[item.id])
+        try:
+            edit_url = reverse(edit_url, args=[item.id])
+        except NoReverseMatch:
+            edit_url = None
         if item._meta.get_latest_by:
             date = getattr(item, item._meta.get_latest_by)
         else:
