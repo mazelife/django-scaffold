@@ -23,6 +23,7 @@
 {{preview|safe}}
 </div>
 <form action="" method="POST" class="move-section">
+{% csrf_token %}
 <label>Make this {{model_label}} a &nbsp;
     <select name="relationship">
         <option value="neighbor">Neighbor</option>

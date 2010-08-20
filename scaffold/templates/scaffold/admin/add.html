@@ -20,6 +20,7 @@
 {%else%}
 <form enctype="multipart/form-data" action="" method="post">
 {%endif%}
+    {% csrf_token %}
     {%if has_fieldsets%}
     {% for fieldset in form %}
         {% include "scaffold/admin/includes/fieldset.html" %}

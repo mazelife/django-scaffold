@@ -20,6 +20,7 @@
 {%endblock%}
 <div id="content-main">
     <form enctype="multipart/form-data" action="" method="post" id="{{ opts.module_name }}_form">    
+        {% csrf_token %}
         {% for fieldset in form %}
             {% include "scaffold/admin/includes/fieldset.html" %}
         {% endfor %}

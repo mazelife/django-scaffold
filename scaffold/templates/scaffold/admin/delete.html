@@ -43,6 +43,7 @@
 {%endwith%}
 {%endif%}
 <form action="" method="POST">
+{% csrf_token %}
 <input type="submit" value="Yes, I'm sure" />
 </form>
 {% endblock %}
