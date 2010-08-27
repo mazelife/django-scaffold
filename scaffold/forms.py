@@ -17,7 +17,7 @@ class SectionForm(forms.ModelForm):
     
     def save(self, *args, **kwargs):
         """
-        We're overriding this beacuse we don't want to use Django's ORM to
+        We're overriding this because we don't want to use Django's ORM to
         create new nodes. django-treebeard has it's own node creation methods
         which should be used instead. To make sure no one actually uses this
         ModelForm to do that, calling it's save method will raise a 
@@ -26,7 +26,7 @@ class SectionForm(forms.ModelForm):
         save is fine.
         """
         if hasattr(self, 'instance') and self.instance:
-            return super(SectionForm, self).save()
+            return super(SectionForm, self).save(*args, **kwargs)
         raise NotImplementedError, (
             "Use django-treebeard's native methods to create new nodes."
         )
