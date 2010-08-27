@@ -13,10 +13,14 @@ from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
 from django.db import models, transaction
 from django.forms.formsets import all_valid
+from django.forms.models import modelform_factory
 from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
+from django.db import transaction
+from django.utils.encoding import force_unicode
 from django.utils.functional import update_wrapper
 from django.utils.safestring import mark_safe
+from django.utils.translation import ugettext_lazy as _
 from django.views.generic import simple
 
 from forms import SectionForm
@@ -36,6 +40,7 @@ class SectionAdmin(admin.ModelAdmin):
     form = SectionForm
     list_per_page = 10
     template_base = "scaffold/admin/"
+    prepopulated_fields = {"slug": ("title",)}
     
     def get_urls(self):
         
@@ -200,67 +205,122 @@ class SectionAdmin(admin.ModelAdmin):
         """
         return self.redirect_to_scaffold_index(request)
 
-    def custom_add_view(self, request, section_id):
+    @transaction.commit_manually
+    def custom_add_view(self, request, section_id, 
+        form_url='', extra_context=None):
         """
-        This add view overrides the the standard admin add_view (see above).
+        The 'add' admin view for this model.
+        
+        We're managing transactions manually on this one because of the way         
+        treebeard works. Treebeard wraps a model's save method and doesn't allow
+        us to pass the `commit=False` argument to the save method. But the 
+        admin wants to do this is because creation of the model depends on also 
+        being able validate and save any inlines. Treebeard does however use the
+        `transaction.commit_unless_managed()` feature in it's save wrappers.
+        
+        We can exploit this so safely unwind the creation of all objects if 
+        something fails along the way. 
+        
         """
         model = self.model
         opts = model._meta
+
         if not self.has_add_permission(request):
             raise PermissionDenied
-        
+        # My Code
         if section_id == 'root':
             parent = None
         else:
             parent = model.objects.get(pk=section_id)
-            setattr(parent, 'has_children', len(parent.get_children()) > 0)        
+            setattr(parent, 'has_children', len(parent.get_children()) > 0)
+        
         ModelForm = self.get_form(request)
+        formsets = []
         if request.method == 'POST':
-            info = model._meta.app_label, model._meta.module_name
-            form = ModelForm(request.POST, request.FILES)
-            if form.is_valid():
-                form_validated = True
-                try:
-                    kwargs = form.cleaned_data
-                    if parent:
-                        new_object = parent.add_child(**kwargs)
-                    else:
-                        new_object = model.add_root(**kwargs)
-                except Exception, e:
-                    raise ValidationError, e
-            else:
-                form_validated = False
-                new_object = model
-            if form_validated and request.POST.get('position') \
-                and request.POST.get('child'):
-                section = parent.get_subsections().get(
-                    slug = form.cleaned_data['slug']
-                )
-                rel_to = model.objects.get(pk=request.POST.get('child'))
-                rel = request.POST.get('position')
-                pos_map = {
-                    'before': 'left',
-                    'after': 'right'
-                }
-                if rel not in pos_map.keys():
-                    positions = ", ".join(pos_map.keys())
-                    return HttpResponseBadRequest((
-                        "Position must be one of: " + 
-                        positions
-                    ))
-                try:
-                    new_object.move(rel_to, pos_map[rel])
-                except Exception, e:
-                    raise FieldError, "Unable to move: %s" % str(e)
-            if form_validated:
-                self.log_addition(request, new_object)
-                if request.POST.has_key("_continue"):
-                    return self.redirect_to_object_changeform(
-                        request, 
-                        new_object
+            # Becuase transactions are managed manually, any DB
+            # or validation operation that occurs durint the processing of a
+            # POST request will raise a ValidationError exception if it     
+            # encounters a problem. The giant try/catch block which wraps
+            # all this allows us to rollback if any problems occur.
+            try:
+                form = ModelForm(request.POST, request.FILES)
+                if form.is_valid():
+                    try:
+                        kwargs = form.cleaned_data
+                        if parent:
+                            new_object = parent.add_child(**kwargs)
+                        else:
+                            new_object = self.model.add_root(**kwargs)
+                        form_validated = True
+                    except Exception, e:
+                        raise ValidationError, e
+                else:
+                    form_validated = False
+                    new_object = self.model()
+                prefixes = {}
+                for FormSet, inline in\
+                    zip(self.get_formsets(request), self.inline_instances):
+                    prefix = FormSet.get_default_prefix()
+                    prefixes[prefix] = prefixes.get(prefix, 0) + 1
+                    if prefixes[prefix] != 1:
+                        prefix = "%s-%s" % (prefix, prefixes[prefix])
+                    formset = FormSet(
+                        data=request.POST, 
+                        files=request.FILES,
+                        instance=new_object,
+                        save_as_new=request.POST.has_key("_saveasnew"),
+                        prefix=prefix, 
+                        queryset=inline.queryset(request)
                     )
-                return self.redirect_to_scaffold_index(request)                
-        else:
+                    formsets.append(formset)
+                if all_valid(formsets) and form_validated:
+                    # The object validated and saved, the inlines appear to be
+                    # valid, now we will save them one by one:
+                    try:
+                        for formset in formsets:
+                            self.save_formset(request, form, formset,
+                                change=False
+                            )
+                    except Exception, e:
+                        raise ValidationError, e
+                    if form_validated and request.POST.get('position') \
+                        and request.POST.get('child'):
+                        section = parent.get_subsections().get(
+                            slug = form.cleaned_data['slug']
+                        )
+                        rel_to = model.objects.get(pk=request.POST.get('child'))
+                        rel = request.POST.get('position')
+                        pos_map = {
+                            'before': 'left',
+                            'after': 'right'
+                        }
+                        if rel not in pos_map.keys():
+                            positions = ", ".join(pos_map.keys())
+                            raise ValidationError, (
+                                "Position must be one of: %s" %
+                                positions
+                            )
+                        try:
+                            new_object.move(rel_to, pos_map[rel])
+                        except Exception, e:
+                            raise ValidationError, "Unable to move: %s" % str(e)
+
+                    self.log_addition(request, new_object)
+                    transaction.commit()
+                    if request.POST.has_key("_continue"):
+                        return self.redirect_to_object_changeform(
+                            request, 
+                            new_object
+                        )
+                    return self.redirect_to_scaffold_index(request)                        
+                else:
+                    # Fieldset validation error, so we rollback
+                    transaction.rollback()
+            except ValidationError, e:
+                    transaction.rollback()
+                    return HttpResponseBadRequest(" ".join(e.messages))
+        else:         # Request is not POST
+        
             # Prepare the dict of initial data from the request.
             # We have to special-case M2Ms as a list of comma-separated PKs.
             initial = dict(request.GET.items())
@@ -272,28 +332,47 @@ class SectionAdmin(admin.ModelAdmin):
                 if isinstance(f, models.ManyToManyField):
                     initial[k] = initial[k].split(",")
             form = ModelForm(initial=initial)
-        prepop_fields = self.prepopulated_fields
-        for field_name, field in form.fields.items():
-            if not field.required and not prepop_fields.has_key(field_name):
-                del form.fields[field_name]
-        adminForm = helpers.AdminForm(form, [], self.prepopulated_fields)
-        if not adminForm.fieldsets:
-            adminForm = form
-            has_fieldsets = False
-        else:
-            has_fieldsets = True
+            prefixes = {}
+            for FormSet, inline in zip(self.get_formsets(request),
+                                       self.inline_instances):
+                prefix = FormSet.get_default_prefix()
+                prefixes[prefix] = prefixes.get(prefix, 0) + 1
+                if prefixes[prefix] != 1:
+                    prefix = "%s-%s" % (prefix, prefixes[prefix])
+                formset = FormSet(instance=self.model(), prefix=prefix,
+                                  queryset=inline.queryset(request))
+                formsets.append(formset)
+
+        adminForm = helpers.AdminForm(form, list(self.get_fieldsets(request)),
+            self.prepopulated_fields, self.get_readonly_fields(request),
+            model_admin=self)
         media = self.media + adminForm.media
+
+        inline_admin_formsets = []
+        for inline, formset in zip(self.inline_instances, formsets):
+            fieldsets = list(inline.get_fieldsets(request))
+            readonly = list(inline.get_readonly_fields(request))
+            inline_admin_formset = helpers.InlineAdminFormSet(inline, formset,
+                fieldsets, readonly, model_admin=self)
+            inline_admin_formsets.append(inline_admin_formset)
+            media = media + inline_admin_formset.media
+
+        # My code:
         context = {
-            'parent': parent,
-            'form': adminForm,
-            'has_fieldsets': has_fieldsets,
-            'media': media,
-            'title': "Add %s" % self.app_context['model_label'],
+            'add': True,
+            'parent': parent,        
+            'title': _('Add %s') % force_unicode(opts.verbose_name),
+            'adminform': adminForm,
+            'is_popup': request.REQUEST.has_key('_popup'),
+            'show_delete': False,
+            'media': mark_safe(media),
+            'inline_admin_formsets': inline_admin_formsets,
+            'errors': helpers.AdminErrorList(form, formsets),
+            'root_path': self.admin_site.root_path,
+            'app_label': opts.app_label,
         }
-        return self.render_scaffold_page(request, "add.html", 
-            context
-        )
-    custom_add_view = transaction.commit_on_success(custom_add_view)        
+        context.update(extra_context or {})
+        return self.render_scaffold_page(request, "add.html", context) 
     
     def delete_view(self, request, object_id):
         """
