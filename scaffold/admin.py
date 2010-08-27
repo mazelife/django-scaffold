@@ -227,7 +227,6 @@ class SectionAdmin(admin.ModelAdmin):
 
         if not self.has_add_permission(request):
             raise PermissionDenied
-        # My Code
         if section_id == 'root':
             parent = None
         else:
@@ -357,7 +356,6 @@ class SectionAdmin(admin.ModelAdmin):
             inline_admin_formsets.append(inline_admin_formset)
             media = media + inline_admin_formset.media
 
-        # My code:
         context = {
             'add': True,
             'parent': parent,        
