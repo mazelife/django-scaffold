@@ -18,6 +18,7 @@ from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from django.db import transaction
 from django.utils.encoding import force_unicode
+from django.forms.util import ErrorList
 from django.utils.functional import update_wrapper
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
@@ -214,12 +215,12 @@ class SectionAdmin(admin.ModelAdmin):
         We're managing transactions manually on this one because of the way         
         treebeard works. Treebeard wraps a model's save method and doesn't allow
         us to pass the `commit=False` argument to the save method. But the 
-        admin wants to do this is because creation of the model depends on also 
+        admin wants to do this because creation of the model depends on also 
         being able validate and save any inlines. Treebeard does however use the
         `transaction.commit_unless_managed()` feature in it's save wrappers.
         
-        We can exploit this so safely unwind the creation of all objects if 
-        something fails along the way. 
+        We can exploit this to safely unwind the creation of all objects if 
+        something fails along the way.
         
         """
         model = self.model
@@ -246,12 +247,22 @@ class SectionAdmin(admin.ModelAdmin):
                 if form.is_valid():
                     try:
                         kwargs = form.cleaned_data
-                        if parent:
-                            new_object = parent.add_child(**kwargs)
-                        else:
-                            new_object = self.model.add_root(**kwargs)
+                        new_object = self.validate_and_create_object(
+                            parent, 
+                            kwargs
+                        )
                         form_validated = True
+                    except ValidationError, e:
+                        # Validation can't happen via the usual channels, so 
+                        # we're going to monkey with the form's error list.
+                        form_validated = False
+                        form._errors['slug'] = ErrorList()
+                        form._errors['slug'].append(e.messages[0])
+                        new_object = self.model()
                     except Exception, e:
+                        # Something bad has happened; not sure what, so we'll
+                        # punt by re-raising as a validation error which will be 
+                        # handled by the outer try/catch.
                         raise ValidationError, e
                 else:
                     form_validated = False
@@ -706,7 +717,56 @@ class SectionAdmin(admin.ModelAdmin):
         return self.render_scaffold_page(request, "order_all_content.html",
             context
         )
-
+    
+    def validate_and_create_object(self, parent, kwargs):
+        """
+        Based on the `VALIDATE_GLOBALLY_UNIQUE_SLUGS` setting, ensures that no 
+        other children with the slug exist *or* ensures that no other children 
+        at that level with the same slug exist. If that requirement is 
+        satisfied, creates and returns the object. Otherwise, a ValidationError
+        is raised.
+        
+        This task, sadly, cannot be handled through traditional model or form
+        validators because the model's save method is wrapped up in treebeard
+        code.
+        """
+        slug = kwargs['slug']
+        verbose_name = self.model._meta.verbose_name
+        if app_settings.VALIDATE_GLOBALLY_UNIQUE_SLUGS:
+            try:
+                self.model.objects.get(slug=slug)
+            except self.model.DoesNotExist:
+                if parent:
+                    return parent.add_child(**kwargs)
+                else:
+                    return self.model.add_root(**kwargs)
+            else:
+                raise ValidationError, (
+                    "A %s with the slug '%s' already exists"
+                ) % (verbose_name, slug)
+        # Validation if slugs do not have to be globally unique.        
+        else:
+            if parent:
+                if slug in [obj.slug for obj in parent.get_children()]:
+                    err_str = (
+                        "The %s '%s' already has a child with the "
+                        "slug '%s.'"
+                    ) % (verbose_name, parent.title, slug)
+                    raise ValidationError, err_str
+                else:
+                    return parent.add_child(**kwargs)
+            else:
+                if slug in [obj.slug for obj in \
+                    self.model.get_root_nodes()]:
+                    err_str = (
+                        "A %s already exists at the root of the tree with "
+                        "the slug %s."
+                    ) % (verbose_name, slug)
+                    verbose_name = self.model._meta.verbose_name
+                    raise ValidationError, err_str
+                else:
+                    return self.model.add_root(**kwargs)
+        return None
 
 ######################################
 #        Utility Functions
