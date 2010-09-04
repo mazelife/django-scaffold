@@ -12,6 +12,24 @@ from django.test import TestCase
 from models import BaseSection
 import app_settings
 
+"""
+Current test coverage
+====================================================
+
+A listing of code coverage by module.
+
+Name                             Stmts   Exec  Cover 
+-----------------------------------------------------
+scaffold.admin                     375    258    68%   
+scaffold.forms                       8      7    87%   
+scaffold.middleware                 51     35    68%   
+scaffold.models                     87     82    94%   
+scaffold.templatetags.sections      65     58    89%   
+scaffold.views                      19      9    47%   
+-----------------------------------------------------
+TOTAL                              605    449    74%
+"""
+
 try:
     cache.get_app('admin')
     HAS_DJANGO_AUTH = True
@@ -155,17 +173,23 @@ class SectionTest(TestCase):
         admin.model_proxy = TestSection # Monkey patch!
     
     def test_section_view(self):
+        """
+        Make sure the default section view returns 200 and contains
+        the section in the template context.
+        """
         TestSection.load_bulk(BASE_DATA)
         import views, middleware
         self._patch_get_extending_model()
-        url = TestSection.objects.get(slug='231').get_absolute_url()
+        obj = TestSection.objects.get(slug='231')
+        url = obj.get_absolute_url()
         result = self.client.get(url)
         self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.context['section'].pk, obj.pk)
         
     def test_admin_index(self):
         """
         Verify that each section in the section tree can be found on the admin 
-        index page and that its title is present."""
+        index page and that it's title is present."""
         self.login_and_load()
         sections = TestSection.objects.all()
         response = self.client.get(self.admin_index_url)
@@ -192,7 +216,6 @@ class SectionTest(TestCase):
         # Try creating a node that is a child         
         test_section = TestSection.objects.get(slug="2")
         admin_urls = self.get_admin_urls(test_section)
-        
         response = self.client.get(admin_urls['create'])
         self.assertContains(response, test_section.title)
         # Create a new section, but use a bad position:
@@ -273,6 +296,25 @@ class SectionTest(TestCase):
             [n.slug for n in TestSection.objects.get(slug="23").get_children()]
         )
 
+    def test_admin_validation(self):
+        """
+        Make sure we can't create two sections with the same slug under one 
+        parent.
+        """
+        #FIXME: Write a test.
+        self.login_and_load()
+        test_section = TestSection.objects.get(slug="2")
+        admin_urls = self.get_admin_urls(test_section)
+        response = self.client.post(admin_urls['create'], {
+            'slug': '22',
+            'title': 'Invalid!',
+        })
+        err = response.context['adminform'].form.errors['slug'][0]
+        self.assertEqual(
+            u"The test section '2' already has a child with the slug '22.'",
+            err
+        )
+    
     def test_admin_section_remove(self):
         """Delete a section via the admin interface."""
         self.login_and_load()
