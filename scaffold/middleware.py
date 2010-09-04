@@ -56,25 +56,35 @@ def get_current_section():
     return getattr(_thread_locals, 'section', None)
 
 def lookup_section(lookup_from):
+    """
+    NB: `lookup_from` may either be an HTTP request, or a string representing an 
+    integer.
+    """
     Section = app_settings.get_extending_model()
     if lookup_from.__class__.__name__ == "WSGIRequest":
         path_map = _get_section_path_map()
         section_paths = path_map.keys()
         # Sort by shortest path to longest.
         section_paths.sort(lambda x, y: len(x) <= len(y) and 1 or -1)
-        
         # Strips leading and trailing slashes
-        path = lookup_from.path
-        if path.startswith('/'):
-            path = path[1:]
-        if path.endswith('/'):
-            path = path[:-1]
-
-        matches = [p for p in section_paths if path.startswith(p)]
-        if len(matches) >= 1:
-            return Section.objects.get(slug=path_map[matches[0]])
-        else:
-            return None
+        path = lookup_from.path.strip("/")
+        path_matches = [p for p in section_paths if path.startswith(p)]
+        if len(path_matches) >= 1:
+            if app_settings.VALIDATE_GLOBALLY_UNIQUE_SLUGS:
+                # If slugs have to be globally unique, we can shortcut to a 
+                # more efficient query.
+                return Section.objects.get(slug=path_map[path])
+            else:
+                # If slugs are not unique, then we need to search through all 
+                # matches for the slug that actually matches our path.
+                sections = Section.objects.filter(slug=path_map[path])
+                if len(sections) == 1:
+                    return sections[0]
+                else:
+                    for section in sections:
+                        if section.full_path == path:
+                            return section
+        return None
     else:
         try:
             return Section.objects.get(pk=int(lookup_from))
