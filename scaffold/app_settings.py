@@ -50,6 +50,10 @@ ALLOW_ASSOCIATED_ORDERING = _get_setting('ALLOW_ASSOCIATED_ORDERING',
     default=True
 )
 
+VALIDATE_GLOBALLY_UNIQUE_SLUGS = _get_setting('VALIDATE_GLOBALLY_UNIQUE_SLUGS',   
+    default=False
+)
+
 def get_extending_model():
     """
     This method returns the model that subclasses BaseSection.
