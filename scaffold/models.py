@@ -8,6 +8,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from treebeard.mp_tree import MP_Node
 
+import app_settings
+
 class BaseSection(MP_Node):
     """
     An abstract model of a section or subsection. This class provides a base
@@ -15,7 +17,10 @@ class BaseSection(MP_Node):
     object.
     """
     title =  models.CharField(_("Title"), max_length=255)
-    slug = models.SlugField(_("Slug"), help_text=_("Used to construct URL"))
+    slug = models.SlugField(_("Slug"), 
+        help_text=_("Used to construct URL"),
+        unique = app_settings.VALIDATE_GLOBALLY_UNIQUE_SLUGS
+    )
     order = models.IntegerField(_("Order of section"), blank=True, default=0)
     
     class Meta:
