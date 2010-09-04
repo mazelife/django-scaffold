@@ -31,7 +31,7 @@ setup(
     license='BSD License',
     packages=['scaffold'],
     package_dir={'scaffold': 'scaffold'},
-    package_data={'treebeard': ['templates/admin/*.html']},
+    package_data={'scaffold': ['templates/admin/*.html']},
     description=(
         'Reusable application for a generic section/subsection hierarchy'
         ' in Django 1.0+'
