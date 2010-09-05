@@ -16,6 +16,8 @@ Contents:
    Available settings <settings.rst>
    Customizing the admin interface <admin>
    Api <api>
+   
+.. image:: /_static/menu.png
 
 Indices and tables
 ==================
