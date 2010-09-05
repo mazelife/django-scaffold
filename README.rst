@@ -23,4 +23,4 @@ Django-scaffolding uses the following javascript libraries (these are included i
 
 This project is licensed under a BSD License.
 
-.. image:: /mazelife/django-scaffold/raw/master/docs/source/_static/menu.png
+.. image:: http://github.com/mazelife/django-scaffold/raw/master/docs/source/_static/menu.png
