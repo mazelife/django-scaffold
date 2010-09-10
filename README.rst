@@ -11,7 +11,7 @@ also hang other content off of it.
 Requirements
 --------------
 
-* `Django <http://djangoproject.com>`_   (1.1.1)
+* `Django <http://djangoproject.com>`_   (1.1.1 or higher)
 * `django-treebeard <https://tabo.pe/projects/django-treebeard/>`_.
 
 
