@@ -89,7 +89,6 @@ Unspported ``ModelAdmin`` Options
 * ``list_per_page``
 * ``list_select_related``
 * ``ordering``
-* ``save_on_top``
 * ``search_fields``
 * ``actions``
 
