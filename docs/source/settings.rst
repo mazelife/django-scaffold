@@ -12,7 +12,7 @@ Default: ``True``
 
 One of scaffold's features is that you can order multiple types of content that is attached to a scaffold item. For example, lets say you extend ``scaffold.models.BaseSection`` with a model called Section. By it's very nature, one section can be the child of another. However, you might also create a model called ``Article`` which has a Foreign-key relationship with a section, and thus is it's child too. In fact you might even establish a generic foreign key relationship between a model and your ``Section`` model. When this property is set to True, you can order all items relative to each other via the admin interface.
 
-Note that for this to work, all models must share a common field were the order, relative to each other, can be stored as an integer. By default, models that inherit from ``scaffold.models.BaseSection``assume this field is called 'order'. 
+Note that for this to work, all models must share a common field were the order, relative to each other, can be stored as an integer. By default, models that inherit from ``scaffold.models.BaseSection`` assume this field is called 'order'. 
 
 If you don't want this ordering option to be available in the admin interface for associated content, set this to False.
 
@@ -69,3 +69,10 @@ SCAFFOLD_PATH_CACHE_TTL
 Default: ``43200`` (that's equal to 12 hours)
 
 The length of time (in seconds) an item persists in the path cache. The path cache is a way of very quickly (and without a DB call) looking up scaffold items from a url. Note that that adding, editing the slug of, or removing a scaffold item automatically refreshes the cache.
+
+SCAFFOLD_VALIDATE_GLOBALLY_UNIQUE_SLUGS
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Default: ``False``
+
+If set to ``True`` this setting will require all slugs to be globally unique. Otherwise, slugs can be reused **except** among objects with a common parent (in other words, an object cannot have two children with the same slug).
