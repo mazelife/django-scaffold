@@ -45,14 +45,14 @@ class BaseSection(MP_Node):
     def type(self):
         """
         A property that returns the string 'section' if the section is at the 
-        root of the tree,'subsection' otherwise.
+        root of the tree, 'subsection' otherwise.
         """
         return self.is_root and 'section' or 'subsection'    
     
     def get_first_populated_field(self, field_name):
         """
         Returns the first non-empty instance of the given field in the 
-        sections tree. Will crawl from leaf to root, returning ``None`` if no 
+        sections tree. Will crawl from leaf to root, returning `None` if no 
         non-empty field is encountered.
         """
         assert hasattr(self, field_name), "Field name does not exist."
@@ -73,7 +73,7 @@ class BaseSection(MP_Node):
         generic foreign key (for example, through a subclass of the  
         SectionItem model).
         
-        This method returns a list of tuples:
+        This method returns a list of tuples::
         
             (object, app name, model name, relationship_type)
         
@@ -82,7 +82,7 @@ class BaseSection(MP_Node):
         content we know could be attached to a section: articles and profiles      
         Articles should be sorted by their 'headline' field, while profiles 
         should be sorted by their 'title' field. We would call our method 
-        thusly:
+        thusly::
        
             section = Section.objects.all()[0]
             section.get_related_content(sort_fields=['title', 'headline'])
@@ -160,28 +160,28 @@ class BaseSection(MP_Node):
         """
         This method returns an aggregation of all content that's associated 
         with a section, including subsections, and other objects related via 
-        any type of foreign key. To restrict the types of objetcs that are      
+        any type of foreign key. To restrict the types of objetcs that are
         returned from foreign-key relationships, the only argument takes a  
-        list of items with the signature:
-        
+        list of items with the signature::  
+            
             {app name}.{model name}
-        
+            
         For example, if you wanted to retrieve a list of all subsections and 
-        associated articles only, you could do the following:
-        
+        associated articles only, you could do the following::
+            
             section = Section.objects.all()[0]
             section.get_associated_content(only=['articles.article'])
-        
+            
         Furthermore, if all objects have a commone sort key, you can specify 
         that with the sort_key parameter. So, since sections have an 'order' 
-        field, if articles had that field as well, you could do the following:
-        
+        field, if articles had that field as well, you could do the following::
+            
             section = Section.objects.all()[0]
             section.get_associated_content(
                 only=['articles.article'], 
                 sort_key='order'
             )
-        
+            
         ...and the list returned would be sorted by the 'order' field.
         """
         
