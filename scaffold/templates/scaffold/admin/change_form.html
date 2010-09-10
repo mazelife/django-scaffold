@@ -1,0 +1,76 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_modify adminmedia sections %}
+{% block breadcrumbs %}{% if not is_popup %}
+<div class="breadcrumbs">
+    <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo; 
+    <a href="{{app_index_url}}">{{app_label|capfirst|escape}}</a> &rsaquo;      
+    {% if has_change_permission %}<a href="{{changelist_url}}">{{ model_label_plural|capfirst }}</a>{% else %}{{ model_label_plural|capfirst }}{% endif %} &rsaquo; 
+    {{ original|truncatewords:"18" }}
+</div>
+{% endif %}{% endblock %}
+{% block content %}<div id="content-main">
+{% block object-tools %}{{block.super}}{% endblock %}
+<form {% if has_file_field %}enctype="multipart/form-data" {% endif %}action="{{ form_url }}" method="post" id="{{ opts.module_name }}_form">{% csrf_token %}{% block form_top %}{% endblock %}
+<div>
+{% if is_popup %}<input type="hidden" name="_popup" value="1" />{% endif %}
+{% if save_on_top %}{% submit_row %}{% endif %}
+{% if errors %}
+    <p class="errornote">
+    {% blocktrans count errors|length as counter %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktrans %}
+    </p>
+    {{ adminform.form.non_field_errors }}
+{% endif %}
+
+{% for fieldset in adminform %}
+  {% include "admin/includes/fieldset.html" %}
+{% endfor %}
+
+{% block after_field_sets %}{% endblock %}
+
+{% for inline_admin_formset in inline_admin_formsets %}
+    {% include inline_admin_formset.opts.template %}
+{% endfor %}
+
+{% block after_related_objects %}{% endblock %}
+
+{% submit_row %}
+
+{% if adminform and add %}
+   <script type="text/javascript">document.getElementById("{{ adminform.first_field.auto_id }}").focus();</script>
+{% endif %}
+
+{# JavaScript for prepopulated fields #}
+{% prepopulated_fields_js %}
+</div>
+</form></div>
+{%block related_content%}
+    <h2>Items Belonging to this {{model_label}}:</h2>
+    <table class="related-content">
+    <thead>
+        <tr>
+            <th{%ifequal sort "name"%} class="active"{%endifequal%}>Title</th>
+            <th{%ifequal sort "date"%} class="active"{%endifequal%}>Date</th>
+            <th{%ifequal sort "content"%} class="active"{%endifequal%} colspan="2">Content Type</th>        
+        </tr>
+    </thead>
+    <tbody>
+    {%for item, date, app, model, relationship_type, edit_url in related_content%}
+        <tr>
+            <td><a href="{{item.get_absolute_url}}">
+                {%if item.title%}{{item.title}}{%else%}{%if item.headline%}{{item.headline}}{%else%}{{item}}{%endif%}{%endif%}
+            </a></td>
+            <td>{%if date%}{{date|date:'D, F j, Y'}}{%else%}(no date){%endif%}</td>
+            <td>{{model}}</td>
+            <td><a class="changelink" href="{{edit_url}}">Edit</a></td>
+        </tr>
+    {%empty%}
+        <tr><td colspan="3">No objects assigned to the {{model_label}}.</td></tr>
+    {%endfor%}
+    </tbody>
+    </table>
+
+</div>
+{%endblock%}
+
+{% endblock %}
+

@@ -22,6 +22,7 @@ from django.forms.util import ErrorList
 from django.utils.functional import update_wrapper
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
+from django.views.decorators.csrf import csrf_protect
 from django.views.generic import simple
 
 from forms import SectionForm
@@ -30,6 +31,8 @@ import app_settings
 app_name =  app_settings.EXTENDING_APP_NAME
 allow_associated_ordering = app_settings.ALLOW_ASSOCIATED_ORDERING
 model_proxy = app_settings.get_extending_model()
+
+csrf_protect_m = admin.options.csrf_protect_m
 
 class SectionAdmin(admin.ModelAdmin):
     
@@ -42,6 +45,8 @@ class SectionAdmin(admin.ModelAdmin):
     list_per_page = 10
     template_base = "scaffold/admin/"
     prepopulated_fields = {"slug": ("title",)}
+    
+    change_form_template ="scaffold/admin/change_form.html"
     
     def get_urls(self):
         
@@ -382,7 +387,9 @@ class SectionAdmin(admin.ModelAdmin):
         }
         context.update(extra_context or {})
         return self.render_scaffold_page(request, "add.html", context) 
-    
+
+    @csrf_protect_m
+    @transaction.commit_on_success    
     def delete_view(self, request, object_id):
         """
         This view allows the user to delete Sections within the node tree.
@@ -414,7 +421,9 @@ class SectionAdmin(admin.ModelAdmin):
             "delete.html", context
         )
     delete_view = transaction.commit_on_success(delete_view)
-    
+
+    @csrf_protect_m
+    @transaction.commit_on_success    
     def move_view(self, request, section_id):
         """This view allows the user to move sections within the node tree."""
         #FIXME: should be an AJAX responder version of this view. 
@@ -503,112 +512,20 @@ class SectionAdmin(admin.ModelAdmin):
         )    
     move_view = transaction.commit_on_success(move_view)
             
-    def change_view(self, request, section_id):
-        """
-        This view allows the user to edit Sections within the tree.
-        """        
-        model = self.model
-        opts = model._meta
-        
-        rel_sort_key = allow_associated_ordering and 'order' or None
-        try:
-            obj = self.queryset(request).get(pk=unquote(section_id))
-        except model.DoesNotExist:
-            # Don't raise Http404 just yet, because we haven't checked
-            # permissions. We don't want an unauthenticated user to be able
-            # to determine whether a given object exists.        
-            obj = None
-        if not self.has_change_permission(request, obj):
-            raise PermissionDenied
-        if obj is None:
-            raise Http404(_(
-                '%(name)s object with primary key %(key)r does not exist.') % {
-                    'name': force_unicode(opts.verbose_name), 
-                    'key': escape(object_id)
-            })
-        ModelForm = self.get_form(request, obj)
-        formsets = []
-        if request.method == 'POST':
-            form = ModelForm(request.POST, request.FILES, instance=obj)
-            if form.is_valid():
-                form_validated = True
-                new_object = self.save_form(request, form, change=True)
-            else:
-                form_validated = False
-                new_object = obj
-            prefixes = {}
-            for FormSet in self.get_formsets(request, new_object):
-                prefix = FormSet.get_default_prefix()
-                prefixes[prefix] = prefixes.get(prefix, 0) + 1
-                if prefixes[prefix] != 1:
-                    prefix = "%s-%s" % (prefix, prefixes[prefix])
-                formset = FormSet(request.POST, request.FILES,
-                                  instance=new_object, prefix=prefix)
-                formsets.append(formset)
-            if all_valid(formsets) and form_validated:
-                self.save_model(request, new_object, form, change=True)
-                if hasattr(form, 'save_m2m'):
-                    form.save_m2m()
-                for formset in formsets:
-                    self.save_formset(request, form, formset, change=True)
-                change_message = self.construct_change_message(
-                    request,
-                    form,
-                    formsets
-                )
-                self.log_change(request, new_object, change_message)
-                if request.POST.has_key("_continue"):
-                    return self.redirect_to_object_changeform(
-                        request, 
-                        new_object
-                    )
-                return self.redirect_to_scaffold_index(request)
-        else:
-            form = ModelForm(instance=obj)
-            prefixes = {}
-            for FormSet in self.get_formsets(request, obj):
-                prefix = FormSet.get_default_prefix()
-                prefixes[prefix] = prefixes.get(prefix, 0) + 1
-                if prefixes[prefix] != 1:
-                    prefix = "%s-%s" % (prefix, prefixes[prefix])
-                formset = FormSet(instance=obj, prefix=prefix)
-                formsets.append(formset)
-
-        adminForm = helpers.AdminForm(
-            form, 
-            self.get_fieldsets(request, obj), 
-            self.prepopulated_fields
-        )
-        media = self.media + adminForm.media
-        inline_admin_formsets = []
-        for inline, formset in zip(self.inline_instances, formsets):
-            fieldsets = list(inline.get_fieldsets(request, obj))
-            inline_admin_formset = helpers.InlineAdminFormSet(
-                inline, 
-                formset, 
-                fieldsets
-            )
-            inline_admin_formsets.append(inline_admin_formset)
-            media = media + inline_admin_formset.media
-        content_type_id = ContentType.objects.get_for_model(model).id
-        page_title = "Change %s" % self.app_context['model_label'].title()
+    @csrf_protect_m
+    @transaction.commit_on_success
+    def change_view(self, request, object_id, extra_context=None):
+        obj = self.get_object(request, unquote(object_id))
+        rel_sort_key = allow_associated_ordering and 'order' or None        
         context = {
-            'obj': obj,
-            'content_type_id': content_type_id,
-            'form': adminForm,
-            'inline_admin_formsets': inline_admin_formsets,
-            'media': mark_safe(media),
-            'title': page_title,
-            'related_content': _get_content_table(obj, 
-                sort_key=rel_sort_key
-            ),
-            'allow_associated_ordering': allow_associated_ordering, 
+            'allow_associated_ordering': allow_associated_ordering,
+            'related_content': _get_content_table(obj, sort_key=rel_sort_key)
         }
-        
-        return self.render_scaffold_page(request, 
-            "edit.html", context
+        context.update(self.app_context)
+        context.update(extra_context or {})
+        return super(SectionAdmin, self).change_view(request, object_id,
+            extra_context=context
         )
-    change_view = transaction.commit_on_success(change_view)
 
     def related_content_view(self, request, section_id, list_per_page=10):
         """
@@ -662,7 +579,8 @@ class SectionAdmin(admin.ModelAdmin):
             context
         )
 
-
+    @csrf_protect_m
+    @transaction.commit_on_success
     def order_content_view(self, request, section_id):
         """
         This view shows all content associated with a particular section 

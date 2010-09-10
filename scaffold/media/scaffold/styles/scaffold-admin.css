@@ -23,6 +23,10 @@ fieldset.position-node * {
     padding:3px;
     margin-right: 10px;
 }
+
+.button.left.move {
+    margin-left: 10px;
+}
 .form-row.last { border-bottom: 0px;}
 
 #image-preview {

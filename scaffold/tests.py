@@ -337,7 +337,7 @@ class SectionTest(TestCase):
         test_section = TestSection.objects.get(slug="41")
         admin_urls = self.get_admin_urls(test_section)
         response = self.client.get(admin_urls['change'])
-        self.assertEqual(response.context['obj'].slug, test_section.slug)      
+        self.assertEqual(response.context['original'].slug, test_section.slug)      
         response = self.client.post(admin_urls['change'], {
             'slug': '41b',
             'title': 'Forty One B',
