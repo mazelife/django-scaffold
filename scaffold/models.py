@@ -1,9 +1,6 @@
-import operator
-
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.db import models
-from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext_lazy as _
 
 from treebeard.mp_tree import MP_Node

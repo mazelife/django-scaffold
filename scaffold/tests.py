@@ -4,12 +4,13 @@ from django.contrib import admin
 from django.contrib.auth.models import User
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
-from django.db import models, transaction
+from django.db import models
 from django.db.models.loading import cache
-from django.template import Context, Template, TemplateDoesNotExist
+from django.template import Context, Template
 from django.test import TestCase
 
 from models import BaseSection
+
 import app_settings
 
 """
@@ -119,6 +120,7 @@ class SectionTest(TestCase):
                 'test@localhost.com',
                 self.test_password
             )
+            user.save()
         # Install admin:
         admin_patterns = patterns(
             (r'^admin/', include(admin.site.urls)),
@@ -132,7 +134,6 @@ class SectionTest(TestCase):
         if not login_url:
             from django.conf.global_settings import LOGIN_URL as login_url
         login_url = "/admin/login/"
-        from django.contrib.admin.sites import LOGIN_FORM_KEY
         return self.client.login(
             username=self.test_user, 
             password=self.test_password
@@ -167,7 +168,7 @@ class SectionTest(TestCase):
         import settings
         if not self.csrf_disabled:
             self._disable_csrf_middleware()
-        res = self._log_test_client_in()
+        self._log_test_client_in()
         TestSection.load_bulk(BASE_DATA)            
         import admin
         admin.model_proxy = TestSection # Monkey patch!
@@ -178,7 +179,6 @@ class SectionTest(TestCase):
         the section in the template context.
         """
         TestSection.load_bulk(BASE_DATA)
-        import views, middleware
         self._patch_get_extending_model()
         obj = TestSection.objects.get(slug='231')
         url = obj.get_absolute_url()

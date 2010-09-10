@@ -1,7 +1,4 @@
 from django import forms
-from django.contrib.admin import widgets as admin_widgets
-from django.contrib.contenttypes.generic import generic_inlineformset_factory
-from django.utils.translation import ugettext_lazy as _
 
 import app_settings
 

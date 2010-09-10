@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.core.cache import cache
 from django.core.exceptions import MiddlewareNotUsed
 from django.db.models.signals import post_save, post_delete

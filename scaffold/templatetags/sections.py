@@ -65,7 +65,6 @@ def get_root_sections(parser, token):
     if tokens[1] == 'as': # get_root_sections as [varname]
         varname = tokens[2]
         section = None
-        slug = None
     else: # get_root_sections with [section slug] as [varname]
         if tokens[3] != 'as':
             raise template.TemplateSyntaxError(

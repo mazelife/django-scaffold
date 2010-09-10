@@ -5,24 +5,19 @@ import operator
 from django.contrib import admin
 from django.contrib.admin import helpers
 from django.contrib.admin.util import unquote
-from django.contrib.contenttypes import generic
-from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import PermissionDenied, ValidationError, \
-    FieldError
-from django.core.paginator import Paginator
-from django.core.urlresolvers import reverse
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.paginator import Paginator, EmptyPage, InvalidPage
+from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db import models, transaction
 from django.forms.formsets import all_valid
-from django.forms.models import modelform_factory
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponseBadRequest, HttpResponseServerError, Http404
 from django.shortcuts import get_object_or_404
-from django.db import transaction
 from django.utils.encoding import force_unicode
 from django.forms.util import ErrorList
 from django.utils.functional import update_wrapper
+from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
-from django.views.decorators.csrf import csrf_protect
 from django.views.generic import simple
 
 from forms import SectionForm
@@ -300,9 +295,6 @@ class SectionAdmin(admin.ModelAdmin):
                         raise ValidationError, e
                     if form_validated and request.POST.get('position') \
                         and request.POST.get('child'):
-                        section = parent.get_subsections().get(
-                            slug = form.cleaned_data['slug']
-                        )
                         rel_to = model.objects.get(pk=request.POST.get('child'))
                         rel = request.POST.get('position')
                         pos_map = {
@@ -407,7 +399,6 @@ class SectionAdmin(admin.ModelAdmin):
             raise PermissionDenied
         if not obj:
             raise    
-        obj_repr = obj.title
         if request.method == 'POST':
             obj.delete()
             # Log that a section has been successfully deleted.
@@ -424,7 +415,7 @@ class SectionAdmin(admin.ModelAdmin):
 
     @csrf_protect_m
     @transaction.commit_on_success    
-    def move_view(self, request, section_id):
+    def move_view(self, request, object_id):
         """This view allows the user to move sections within the node tree."""
         #FIXME: should be an AJAX responder version of this view. 
         
@@ -432,7 +423,7 @@ class SectionAdmin(admin.ModelAdmin):
         opts = model._meta
         
         try:
-            obj = self.queryset(request).get(pk=unquote(section_id))
+            obj = self.queryset(request).get(pk=unquote(object_id))
         except model.DoesNotExist:
             # Don't raise Http404 just yet, because we haven't checked
             # permissions. We don't want an unauthenticated user to be able
@@ -482,7 +473,7 @@ class SectionAdmin(admin.ModelAdmin):
                 # Redirect to sections index page.
                 return self.redirect_to_scaffold_index(request)
         # Exclude the node from the list of candidates...
-        other_secs = model.objects.exclude(pk=section_id)
+        other_secs = model.objects.exclude(pk=object_id)
         # ...then exclude descendants of the node being moved.
         other_secs = [n for n in other_secs if not n.is_descendant_of(obj)]
 
@@ -581,16 +572,17 @@ class SectionAdmin(admin.ModelAdmin):
 
     @csrf_protect_m
     @transaction.commit_on_success
-    def order_content_view(self, request, section_id):
+    def order_content_view(self, request, object_id):
         """
         This view shows all content associated with a particular section 
         including subsections, but unlike related_content, this view allows 
         users to set the order of a particular section.
         """
         model = self.model
-
+        opts = model._meta
+        
         try:
-            obj = self.queryset(request).get(pk=unquote(section_id))
+            obj = self.queryset(request).get(pk=unquote(object_id))
         except model.DoesNotExist:
             # Don't raise Http404 just yet, because we haven't checked
             # permissions. We don't want an unauthenticated user to be able
@@ -737,11 +729,11 @@ def _get_user_link_html(request):
     add_perm = app_label + "." + model_proxy._meta.get_add_permission()
     del_perm = app_label + "." + model_proxy._meta.get_delete_permission()
     if not request.user.has_perm(add_perm):
-        link_html = [(name, html) for name, html in  default \
+        link_html = [(name, html) for name, html in  link_html.items() \
             if name != 'add_link'
         ]
     if not request.user.has_perm(del_perm):
-        link_html = [(name, html) for name, html in  default \
+        link_html = [(name, html) for name, html in  link_html.items() \
             if name != 'del_link'
         ]
     return link_html
