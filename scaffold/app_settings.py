@@ -1,4 +1,8 @@
+import re
+
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
+from django.utils.importlib import import_module
 
 _project_settings_registry = []
 
@@ -54,12 +58,16 @@ VALIDATE_GLOBALLY_UNIQUE_SLUGS = _get_setting('VALIDATE_GLOBALLY_UNIQUE_SLUGS',
     default=False
 )
 
+TREEBEARD_NODE_TYPE = _get_setting('TREEBEARD_NODE_TYPE',
+    default="treebeard.mp_tree.MP_Node"
+)
+
 def get_extending_model():
     """
-    This method returns the model that subclasses BaseSection.
+    This function returns the model that subclasses BaseSection.
     Since it's that real, non-abstract model we usually want to
-    deal with, this funcion will be used extensively in views and
-    midllewares. 
+    deal with, this function will be used extensively in views and
+    middlewares. 
     """
     model_path = EXTENDING_MODEL_PATH.split(".")
     model_name = model_path.pop()
@@ -67,3 +75,49 @@ def get_extending_model():
     import_path = ".".join(model_path)
     models = __import__(import_path, fromlist=[submodule])
     return getattr(models, model_name)
+
+def get_treebeard_node_class():
+    """
+    This function returns the Treebeard node type specified in the 
+    ``TREEBEARD_NODE_TYPE`` value in this module or in the 
+    ``SCAFFOLD_TREEBEARD_NODE_TYPE`` value in the main project settings
+    file. Allowed values are:
+        
+        'treebeard.mp_tree.MP_Node'
+        'treebeard.al_tree.AL_Node'
+        'treebeard.ns_tree.NS_Node'
+        
+    Refer to the `treebeard docs <http://django-treebeard.googlecode.com/svn/docs/index.html>` for an explanation
+    of each type.
+    
+    """
+    allowed_node_types = (
+        'treebeard.mp_tree.MP_Node',
+        'treebeard.al_tree.AL_Node',
+        'treebeard.ns_tree.NS_Node',
+    )
+    if TREEBEARD_NODE_TYPE not in allowed_node_types:
+        raise ImproperlyConfigured, (
+            "The SCAFFOLD_TREEBEARD_NODE_TYPE setting must be one of the " 
+            "following: %s."
+        ) % ", ".join(allowed_node_types)
+    try:
+        klass_name = re.search('\.(\w*)$', TREEBEARD_NODE_TYPE).groups()[0]
+    except AttributeError:
+        raise ImproperlyConfigured, (
+            "The SCAFFOLD_TREEBEARD_NODE_TYPE setting could not be parsed"
+        )
+    module_name = TREEBEARD_NODE_TYPE.replace("." + klass_name, '')
+    try:
+        module = import_module(module_name)
+    except ImportError:
+        raise ImproperlyConfigured, (
+        "The module %s could not be imported. Please check your "
+        "SCAFFOLD_TREEBEARD_NODE_TYPE setting."
+        ) % module_name
+    if not hasattr(module, klass_name):
+        raise ImproperlyConfigured, (
+        "The class %s could not be found in the module %s. Please check "
+        "your SCAFFOLD_TREEBEARD_NODE_TYPE setting."
+        ) % (klass_name, module_name)            
+    return getattr(module, klass_name)

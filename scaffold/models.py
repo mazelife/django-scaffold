@@ -7,7 +7,9 @@ from treebeard.mp_tree import MP_Node
 
 import app_settings
 
-class BaseSection(MP_Node):
+Treebeard_Base_Class = app_settings.get_treebeard_node_class()
+
+class BaseSection(Treebeard_Base_Class):
     """
     An abstract model of a section or subsection. This class provides a base
     level of functionality that should serve as scaffold for a custom section
