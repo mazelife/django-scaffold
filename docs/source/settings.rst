@@ -76,3 +76,17 @@ SCAFFOLD_VALIDATE_GLOBALLY_UNIQUE_SLUGS
 Default: ``False``
 
 If set to ``True`` this setting will require all slugs to be globally unique. Otherwise, slugs can be reused **except** among objects with a common parent (in other words, an object cannot have two children with the same slug).
+
+SCAFFOLD_TREEBEARD_NODE_TYPE
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Default: ``'treebeard.mp_tree.MP_Node'``
+
+Allows the user to specify the tree model implementation to use. Allowed values are:  
+    
+* ``'treebeard.mp_tree.MP_Node'``
+* ``'treebeard.al_tree.AL_Node'``
+* ``'treebeard.ns_tree.NS_Node'``
+    
+Depending on the read/write profile of your site, some node types will be more efficient then others. Refer to the `treebeard docs <http://django-treebeard.googlecode.com/svn/docs/index.html>`_ for an explanation
+of each type.

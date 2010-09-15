@@ -87,8 +87,7 @@ def get_treebeard_node_class():
         'treebeard.al_tree.AL_Node'
         'treebeard.ns_tree.NS_Node'
         
-    Refer to the `treebeard docs <http://django-treebeard.googlecode.com/svn/docs/index.html>` for an explanation
-    of each type.
+    Refer to the treebeard docs for an explanation of each type.
     
     """
     allowed_node_types = (
