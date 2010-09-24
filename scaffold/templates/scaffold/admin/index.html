@@ -1,5 +1,5 @@
 {% extends "admin/change_list.html" %}
-{% load i18n %}
+{% load i18n adminmedia%}
 
 {% block extrastyle %}
     {{ block.super }}
@@ -29,7 +29,7 @@
         <div id="toolbar">
             <form id="changelist-search" action="" method="get">
                 <div>
-                    <label for="searchbar"><img src="/media/img/admin/icon_searchbox.png" alt="Search" /></label>
+                    <label for="searchbar"><img src="{%admin_media_prefix%}img/admin/icon_searchbox.png" alt="Search" /></label>
                     <input type="text" size="40" name="q" value="" id="searchbar" />
                     <input type="submit" value="Search" />
                 </div>
