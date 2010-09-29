@@ -5,7 +5,7 @@ import operator
 from django.contrib import admin
 from django.contrib.admin import helpers
 from django.contrib.admin.util import unquote
-from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.exceptions import PermissionDenied, ValidationError, FieldError
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db import models, transaction
@@ -261,9 +261,9 @@ class SectionAdmin(admin.ModelAdmin):
                         new_object = self.model()
                     except Exception, e:
                         # Something bad has happened; not sure what, so we'll
-                        # punt by re-raising as a validation error which will be 
+                        # punt by re-raising as a FieldError which will be 
                         # handled by the outer try/catch.
-                        raise ValidationError, e
+                        raise FieldError, e
                 else:
                     form_validated = False
                     new_object = self.model()
