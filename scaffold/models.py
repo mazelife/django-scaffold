@@ -220,6 +220,11 @@ class BaseSection(Treebeard_Base_Class):
                 ))
 
         def sort_list(x, y):
+            if not hasattr(x[0], sort_key):
+                if not hasattr(y[0], sort_key):
+                    return x
+                else:
+                    return y
             return cmp(getattr(x[0],sort_key),getattr(y[0],sort_key))
 
         if sort_key:
