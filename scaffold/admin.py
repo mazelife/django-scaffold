@@ -629,6 +629,12 @@ class SectionAdmin(admin.ModelAdmin):
         )
     
     def prep_m2m(self, kwargs):
+        """
+        Any kwargs which correspond to M2M fields on the model cannot be
+        saved concurrently. This function removes those from the base kwargs
+        and returns them separately so they can be added after the initial model
+        is saved by treebeard.
+        """
         m2m_rels = {}
         for field in self.model._meta.many_to_many:
             if field.name in kwargs:
@@ -659,6 +665,7 @@ class SectionAdmin(admin.ModelAdmin):
                     newobj = parent.add_child(**kwargs)
                 else:
                     newobj = self.model.add_root(**kwargs)
+                # Add any M2M related objects now.
                 for field_name, related_objects in m2m_data.items():
                     m2m_manager = getattr(newobj, field_name)
                     m2m_manager.add(*related_objects)
@@ -689,6 +696,7 @@ class SectionAdmin(admin.ModelAdmin):
                     raise ValidationError, err_str
                 else:
                     newobj = self.model.add_root(**kwargs)
+            # Add any M2M related objects now.
             for field_name, related_objects in m2m_data.items():
                 m2m_manager = getattr(newobj, field_name)
                 m2m_manager.add(*related_objects)
