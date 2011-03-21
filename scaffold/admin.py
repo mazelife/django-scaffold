@@ -628,6 +628,14 @@ class SectionAdmin(admin.ModelAdmin):
             context
         )
     
+    def prep_m2m(self, kwargs):
+        m2m_rels = {}
+        for field in self.model._meta.many_to_many:
+            if field.name in kwargs:
+                m2m_objects = kwargs.pop(field.name)
+                m2m_rels[field.name] = m2m_objects
+        return kwargs, m2m_rels
+    
     def validate_and_create_object(self, parent, kwargs):
         """
         Based on the `VALIDATE_GLOBALLY_UNIQUE_SLUGS` setting, ensures that no 
@@ -641,15 +649,20 @@ class SectionAdmin(admin.ModelAdmin):
         code.
         """
         slug = kwargs['slug']
+        kwargs, m2m_data = self.prep_m2m(kwargs)
         verbose_name = self.model._meta.verbose_name
         if app_settings.VALIDATE_GLOBALLY_UNIQUE_SLUGS:
             try:
                 self.model.objects.get(slug=slug)
             except self.model.DoesNotExist:
                 if parent:
-                    return parent.add_child(**kwargs)
+                    newobj = parent.add_child(**kwargs)
                 else:
-                    return self.model.add_root(**kwargs)
+                    newobj = self.model.add_root(**kwargs)
+                for field_name, related_objects in m2m_data.items():
+                    m2m_manager = getattr(newobj, field_name)
+                    m2m_manager.add(*related_objects)
+                return newobj
             else:
                 raise ValidationError, (
                     "A %s with the slug '%s' already exists"
@@ -664,7 +677,7 @@ class SectionAdmin(admin.ModelAdmin):
                     ) % (verbose_name, parent.title, slug)
                     raise ValidationError, err_str
                 else:
-                    return parent.add_child(**kwargs)
+                    newobj = parent.add_child(**kwargs)
             else:
                 if slug in [obj.slug for obj in \
                     self.model.get_root_nodes()]:
@@ -675,7 +688,11 @@ class SectionAdmin(admin.ModelAdmin):
                     verbose_name = self.model._meta.verbose_name
                     raise ValidationError, err_str
                 else:
-                    return self.model.add_root(**kwargs)
+                    newobj = self.model.add_root(**kwargs)
+            for field_name, related_objects in m2m_data.items():
+                m2m_manager = getattr(newobj, field_name)
+                m2m_manager.add(*related_objects)
+            return newobj
         return None
 
 ######################################
