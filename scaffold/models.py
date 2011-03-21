@@ -105,33 +105,38 @@ class BaseSection(Treebeard_Base_Class):
         if infer_sort:
             sort_fields = set()
         for rel in self._meta.get_all_related_objects():
-            for fk_item in getattr(self, rel.get_accessor_name()).all():
-                # If this is a generic relation, fetch content object.
-                if hasattr(fk_item, 'content_object'):
-                    fk_item = fk_item.content_object    
-                    relationship_type = 'generic-foreign-key'
-                else:
-                    relationship_type = 'foreign-key'
-                # In the weird edge-case where an item is related to a section
-                # in more than one way, we only want the item to appear in
-                # this list once. Therefore, we ID items by app, model and pk 
-                # and verify we haven't already seen that ID before adding the 
-                # item to our list.
-                object_id = "%s/%s/%s" % (
-                    fk_item._meta.app_label,
-                    fk_item._meta.object_name,
-                    str(fk_item.pk)
-                )
-                if object_id not in object_ids:
-                    object_ids.insert(0, object_id)
-                    associated_content.insert(0,(
-                        fk_item, 
+            try: 
+                fk_items = getattr(self, rel.get_accessor_name())
+            except self.DoesNotExist:
+                continue
+            else:
+                for fk_item in fk_items.all():
+                    # If this is a generic relation, fetch content object.
+                    if hasattr(fk_item, 'content_object'):
+                        fk_item = fk_item.content_object    
+                        relationship_type = 'generic-foreign-key'
+                    else:
+                        relationship_type = 'foreign-key'
+                    # In the weird edge-case where an item is related to a 
+                    # section in more than one way, we only want the item to 
+                    # appear in this list once. Therefore, we ID items by app, 
+                    # model and pk and verify we haven't already seen that ID 
+                    # before adding the item to our list.
+                    object_id = "%s/%s/%s" % (
                         fk_item._meta.app_label,
                         fk_item._meta.object_name,
-                        relationship_type                    
-                    ))
-                    if infer_sort and len(fk_item._meta.ordering) > 0:
-                        sort_fields.add(fk_item._meta.ordering[0])
+                        str(fk_item.pk)
+                    )
+                    if object_id not in object_ids:
+                        object_ids.insert(0, object_id)
+                        associated_content.insert(0,(
+                            fk_item, 
+                            fk_item._meta.app_label,
+                            fk_item._meta.object_name,
+                            relationship_type                    
+                        ))
+                        if infer_sort and len(fk_item._meta.ordering) > 0:
+                            sort_fields.add(fk_item._meta.ordering[0])
         if not len(sort_fields) == 0:
             for item, app, model, rel in associated_content:
                 for sort_field in sort_fields:
