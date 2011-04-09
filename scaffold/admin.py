@@ -1,3 +1,5 @@
+from __future__ import with_statement
+
 from copy import copy
 from functools import partial
 import operator
