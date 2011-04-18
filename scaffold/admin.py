@@ -1,3 +1,5 @@
+from __future__ import with_statement
+
 from copy import copy
 from functools import partial
 import operator
@@ -30,28 +32,28 @@ model_proxy = app_settings.get_extending_model()
 csrf_protect_m = admin.options.csrf_protect_m
 
 class SectionAdmin(admin.ModelAdmin):
-    
+
     class Media:
         css = {
             "all": ("scaffold/styles/scaffold-admin.css",)
         }
-        
+
     form = SectionForm
     list_per_page = 10
     template_base = "scaffold/admin/"
     prepopulated_fields = {"slug": ("title",)}
-    
+
     change_form_template ="scaffold/admin/change_form.html"
-    
+
     def get_urls(self):
-        
+
         from django.conf.urls.defaults import patterns, url
-        
+
         def wrap(view):
             def wrapper(*args, **kwargs):
                 return self.admin_site.admin_view(view)(*args, **kwargs)
             return update_wrapper(wrapper, view)
-        
+
         urls = super(SectionAdmin, self).get_urls()
         info = self.model._meta.app_label, self.model._meta.module_name
         return patterns('',
@@ -66,9 +68,9 @@ class SectionAdmin(admin.ModelAdmin):
                 name='%s_%s_related' % info),
             url(r'^(.+)/order/$',
                 wrap(self.order_content_view),
-                name='%s_%s_order' % info),                
+                name='%s_%s_order' % info),
         ) + urls
-    
+
     def has_view_permission(self, request):
         """
         Returns True if the given request has permission to view the given
@@ -81,11 +83,11 @@ class SectionAdmin(admin.ModelAdmin):
         return request.user.has_perm((
             opts.app_label + '.can_view_associated_content'
         ))
-    
+
     @property
     def app_context(self):
         """
-        Returns a dictionary containing the app name, model name, plural model 
+        Returns a dictionary containing the app name, model name, plural model
         name and changelist (index) url.
         """
         meta = self.model._meta
@@ -95,21 +97,21 @@ class SectionAdmin(admin.ModelAdmin):
             'module_label': meta.module_name,
             'model_label': meta.verbose_name,
             'model_label_plural': unicode(meta.verbose_name_plural),
-            'changelist_url': reverse('admin:%s_%s_changelist' % 
+            'changelist_url': reverse('admin:%s_%s_changelist' %
             (meta.app_label, meta.module_name)),
         }
-    
+
     def render_scaffold_page(self, request, template, context):
         """
-        Helper function to render a scaffold admin page. 
+        Helper function to render a scaffold admin page.
         """
         context.update(self.app_context)
         template_path = self.template_base + template
-        return simple.direct_to_template(request, 
+        return simple.direct_to_template(request,
             template = template_path,
             extra_context = context
         )
-    
+
     def redirect_to_scaffold_index(self, request):
         """Redirect to the change list page of your model."""
         redirect_url = reverse(
@@ -120,18 +122,18 @@ class SectionAdmin(admin.ModelAdmin):
             url=redirect_url,
             permanent=False
         )
-    
+
     def redirect_to_object_changeform(self, request, obj):
         """Redirect to the change form of the given object."""
         redirect_url = reverse(
-            'admin:%(app_label)s_%(module_label)s_change' % self.app_context, 
+            'admin:%(app_label)s_%(module_label)s_change' % self.app_context,
              args=(obj.pk,)
         )
         return simple.redirect_to(request,
             url=redirect_url,
             permanent=False
         )
-    
+
     def get_changelist_repr(self, node):
         """
         A method that takes a node in the tree and returns a string
@@ -139,17 +141,17 @@ class SectionAdmin(admin.ModelAdmin):
         """
         html = '<span><a href="%s">%s <small> &ndash; /%s/</small></a></span>'
         return html % (node.get_absolute_url(), node.title, node.full_path)
-    
+
     def changelist_view(self, request):
         """
         Display a tree of section and subsection nodes.
-        Because of the impossibility of expressing needed concepts (e.g. 
-        recursion) within the django template syntax, the tree html (nested         
-        <ul> elements) is constructed manually in this view using the crawl 
+        Because of the impossibility of expressing needed concepts (e.g.
+        recursion) within the django template syntax, the tree html (nested
+        <ul> elements) is constructed manually in this view using the crawl
         function.
         """
         model = self.model
-        
+
         if not self.has_view_permission(request):
             raise PermissionDenied
 
@@ -181,47 +183,46 @@ class SectionAdmin(admin.ModelAdmin):
             return html + "</li>"
 
         crawl_add_links = partial(
-            crawl, 
+            crawl,
             admin_links=link_html_fields
         )
-        
+
         # Generate HTML
         node_list_html = '<ul id="node-list">'
         node_list_html += "".join(map(crawl_add_links, roots))
         node_list_html += "</ul>"
-        
+
         context = {
-            'node_list':node_list_html, 
+            'node_list':node_list_html,
             'title': "Edit %s" % self.app_context['model_label_plural']
         }
         return self.render_scaffold_page(request, 'index.html', context)
-        
+
     def add_view(self, request):
         """
-        This view will not be used because adding of nodes to the tree can 
+        This view will not be used because adding of nodes to the tree can
         never be done without context (i.e. where in the tree the new node is
         to be positioned). Therefore, the "add" links that appear on the index
-        of the admin site will not work, hence this redirect to the model 
+        of the admin site will not work, hence this redirect to the model
         changeform when it's clicked.
         """
         return self.redirect_to_scaffold_index(request)
 
-    @transaction.commit_manually
-    def custom_add_view(self, request, section_id, 
+    def custom_add_view(self, request, section_id,
         form_url='', extra_context=None):
         """
         The 'add' admin view for this model.
-        
-        We're managing transactions manually on this one because of the way         
+
+        We're managing transactions manually on this one because of the way
         treebeard works. Treebeard wraps a model's save method and doesn't allow
-        us to pass the `commit=False` argument to the save method. But the 
-        admin wants to do this because creation of the model depends on also 
+        us to pass the `commit=False` argument to the save method. But the
+        admin wants to do this because creation of the model depends on also
         being able validate and save any inlines. Treebeard does however use the
         `transaction.commit_unless_managed()` feature in it's save wrappers.
-        
-        We can exploit this to safely unwind the creation of all objects if 
+
+        We can exploit this to safely unwind the creation of all objects if
         something fails along the way.
-        
+
         """
         model = self.model
         opts = model._meta
@@ -233,101 +234,102 @@ class SectionAdmin(admin.ModelAdmin):
         else:
             parent = model.objects.get(pk=section_id)
             setattr(parent, 'has_children', len(parent.get_children()) > 0)
-        
+
         ModelForm = self.get_form(request)
         formsets = []
         if request.method == 'POST':
-            # Becuase transactions are managed manually, any DB
-            # or validation operation that occurs durint the processing of a
-            # POST request will raise a ValidationError exception if it     
-            # encounters a problem. The giant try/catch block which wraps
-            # all this allows us to rollback if any problems occur.
-            try:
-                form = ModelForm(request.POST, request.FILES)
-                if form.is_valid():
-                    try:
-                        kwargs = form.cleaned_data
-                        new_object = self.validate_and_create_object(
-                            parent, 
-                            kwargs
-                        )
-                        form_validated = True
-                    except ValidationError, e:
-                        # Validation can't happen via the usual channels, so 
-                        # we're going to monkey with the form's error list.
-                        form_validated = False
-                        form._errors['slug'] = ErrorList()
-                        form._errors['slug'].append(e.messages[0])
-                        new_object = self.model()
-                    except Exception, e:
-                        # Something bad has happened; not sure what, so we'll
-                        # punt by re-raising as a FieldError which will be 
-                        # handled by the outer try/catch.
-                        raise FieldError, e
-                else:
-                    form_validated = False
-                    new_object = self.model()
-                prefixes = {}
-                for FormSet, inline in\
-                    zip(self.get_formsets(request), self.inline_instances):
-                    prefix = FormSet.get_default_prefix()
-                    prefixes[prefix] = prefixes.get(prefix, 0) + 1
-                    if prefixes[prefix] != 1:
-                        prefix = "%s-%s" % (prefix, prefixes[prefix])
-                    formset = FormSet(
-                        data=request.POST, 
-                        files=request.FILES,
-                        instance=new_object,
-                        save_as_new=request.POST.has_key("_saveasnew"),
-                        prefix=prefix, 
-                        queryset=inline.queryset(request)
-                    )
-                    formsets.append(formset)
-                if all_valid(formsets) and form_validated:
-                    # The object validated and saved, the inlines appear to be
-                    # valid, now we will save them one by one:
-                    try:
-                        for formset in formsets:
-                            self.save_formset(request, form, formset,
-                                change=False
-                            )
-                    except Exception, e:
-                        raise ValidationError, e
-                    if form_validated and request.POST.get('position') \
-                        and request.POST.get('child'):
-                        rel_to = model.objects.get(pk=request.POST.get('child'))
-                        rel = request.POST.get('position')
-                        pos_map = {
-                            'before': 'left',
-                            'after': 'right'
-                        }
-                        if rel not in pos_map.keys():
-                            positions = ", ".join(pos_map.keys())
-                            raise ValidationError, (
-                                "Position must be one of: %s" %
-                                positions
-                            )
+            with transaction.commit_manually():
+                # Becuase transactions are managed manually, any DB
+                # or validation operation that occurs durint the processing of a
+                # POST request will raise a ValidationError exception if it
+                # encounters a problem. The giant try/catch block which wraps
+                # all this allows us to rollback if any problems occur.
+                try:
+                    form = ModelForm(request.POST, request.FILES)
+                    if form.is_valid():
                         try:
-                            new_object.move(rel_to, pos_map[rel])
+                            kwargs = form.cleaned_data
+                            new_object = self.validate_and_create_object(
+                                parent,
+                                kwargs
+                            )
+                            form_validated = True
+                        except ValidationError, e:
+                            # Validation can't happen via the usual channels, so
+                            # we're going to monkey with the form's error list.
+                            form_validated = False
+                            form._errors['slug'] = ErrorList()
+                            form._errors['slug'].append(e.messages[0])
+                            new_object = self.model()
                         except Exception, e:
-                            raise ValidationError, "Unable to move: %s" % str(e)
-
-                    self.log_addition(request, new_object)
-                    transaction.commit()
-                    if request.POST.has_key("_continue"):
-                        return self.redirect_to_object_changeform(
-                            request, 
-                            new_object
+                            # Something bad has happened; not sure what, so we'll
+                            # punt by re-raising as a FieldError which will be
+                            # handled by the outer try/catch.
+                            raise FieldError, e
+                    else:
+                        form_validated = False
+                        new_object = self.model()
+                    prefixes = {}
+                    for FormSet, inline in\
+                        zip(self.get_formsets(request), self.inline_instances):
+                        prefix = FormSet.get_default_prefix()
+                        prefixes[prefix] = prefixes.get(prefix, 0) + 1
+                        if prefixes[prefix] != 1:
+                            prefix = "%s-%s" % (prefix, prefixes[prefix])
+                        formset = FormSet(
+                            data=request.POST,
+                            files=request.FILES,
+                            instance=new_object,
+                            save_as_new=request.POST.has_key("_saveasnew"),
+                            prefix=prefix,
+                            queryset=inline.queryset(request)
                         )
-                    return self.redirect_to_scaffold_index(request)                        
-                else:
-                    # Fieldset validation error, so we rollback
-                    transaction.rollback()
-            except ValidationError, e:
-                    transaction.rollback()
-                    return HttpResponseBadRequest(" ".join(e.messages))
+                        formsets.append(formset)
+                    if all_valid(formsets) and form_validated:
+                        # The object validated and saved, the inlines appear to be
+                        # valid, now we will save them one by one:
+                        try:
+                            for formset in formsets:
+                                self.save_formset(request, form, formset,
+                                    change=False
+                                )
+                        except Exception, e:
+                            raise ValidationError, e
+                        if form_validated and request.POST.get('position') \
+                            and request.POST.get('child'):
+                            rel_to = model.objects.get(pk=request.POST.get('child'))
+                            rel = request.POST.get('position')
+                            pos_map = {
+                                'before': 'left',
+                                'after': 'right'
+                            }
+                            if rel not in pos_map.keys():
+                                positions = ", ".join(pos_map.keys())
+                                raise ValidationError, (
+                                    "Position must be one of: %s" %
+                                    positions
+                                )
+                            try:
+                                new_object.move(rel_to, pos_map[rel])
+                            except Exception, e:
+                                raise ValidationError, "Unable to move: %s" % str(e)
+
+                        self.log_addition(request, new_object)
+                        transaction.commit()
+                        if request.POST.has_key("_continue"):
+                            return self.redirect_to_object_changeform(
+                                request,
+                                new_object
+                            )
+                        return self.redirect_to_scaffold_index(request)
+                    else:
+                        # Fieldset validation error, so we rollback
+                        transaction.rollback()
+                except ValidationError, e:
+                        transaction.rollback()
+                        return HttpResponseBadRequest(" ".join(e.messages))
         else:         # Request is not POST
-        
+
             # Prepare the dict of initial data from the request.
             # We have to special-case M2Ms as a list of comma-separated PKs.
             initial = dict(request.GET.items())
@@ -366,7 +368,7 @@ class SectionAdmin(admin.ModelAdmin):
 
         context = {
             'add': True,
-            'parent': parent,        
+            'parent': parent,
             'title': _('Add %s') % force_unicode(opts.verbose_name),
             'adminform': adminForm,
             'is_popup': request.REQUEST.has_key('_popup'),
@@ -378,16 +380,16 @@ class SectionAdmin(admin.ModelAdmin):
             'app_label': opts.app_label,
         }
         context.update(extra_context or {})
-        return self.render_scaffold_page(request, "add.html", context) 
+        return self.render_scaffold_page(request, "add.html", context)
 
     @csrf_protect_m
-    @transaction.commit_on_success    
+    @transaction.commit_on_success
     def delete_view(self, request, object_id):
         """
         This view allows the user to delete Sections within the node tree.
         """
         model = self.model
-        
+
         try:
             obj = model.objects.get(pk=object_id)
         except model.DoesNotExist:
@@ -398,46 +400,46 @@ class SectionAdmin(admin.ModelAdmin):
         if not self.has_delete_permission(request, obj):
             raise PermissionDenied
         if not obj:
-            raise    
+            raise
         if request.method == 'POST':
             obj.delete()
             # Log that a section has been successfully deleted.
             self.log_deletion(request, obj, obj.title)
             return self.redirect_to_scaffold_index(request)
         context = {
-            'obj': obj, 
+            'obj': obj,
             'title': "Delete %s" % self.app_context['model_label']
         }
-        return self.render_scaffold_page(request,           
+        return self.render_scaffold_page(request,
             "delete.html", context
         )
     delete_view = transaction.commit_on_success(delete_view)
 
     @csrf_protect_m
-    @transaction.commit_on_success    
+    @transaction.commit_on_success
     def move_view(self, request, object_id):
         """This view allows the user to move sections within the node tree."""
-        #FIXME: should be an AJAX responder version of this view. 
-        
+        #FIXME: should be an AJAX responder version of this view.
+
         model = self.model
         opts = model._meta
-        
+
         try:
             obj = self.queryset(request).get(pk=unquote(object_id))
         except model.DoesNotExist:
             # Don't raise Http404 just yet, because we haven't checked
             # permissions. We don't want an unauthenticated user to be able
-            # to determine whether a given object exists.        
+            # to determine whether a given object exists.
             obj = None
         if not self.has_change_permission(request, obj):
             raise PermissionDenied
         if obj is None:
             raise Http404(_(
                 '%(name)s object with primary key %(key)r does not exist.') % {
-                    'name': force_unicode(opts.verbose_name), 
+                    'name': force_unicode(opts.verbose_name),
                     'key': escape(object_id)
             })
-        
+
         if request.method == 'POST':
             rel = request.POST.get('relationship')
             if request.POST.get('to') == 'TOP':
@@ -484,7 +486,7 @@ class SectionAdmin(admin.ModelAdmin):
                 return "<li%s>%s</li>" % (html_class, node.title)
             else:
                 children = node.get_children()
-                html = "<li%s>%s<ul>" % (html_class, node.title)      
+                html = "<li%s>%s<ul>" % (html_class, node.title)
                 html += "".join(
                     map(crawl, children)
                 )
@@ -500,14 +502,14 @@ class SectionAdmin(admin.ModelAdmin):
         }
         return self.render_scaffold_page(request,
             "move.html", context
-        )    
+        )
     move_view = transaction.commit_on_success(move_view)
-            
+
     @csrf_protect_m
     @transaction.commit_on_success
     def change_view(self, request, object_id, extra_context=None):
         obj = self.get_object(request, unquote(object_id))
-        rel_sort_key = allow_associated_ordering and 'order' or None        
+        rel_sort_key = allow_associated_ordering and 'order' or None
         context = {
             'allow_associated_ordering': allow_associated_ordering,
             'related_content': _get_content_table(obj, sort_key=rel_sort_key)
@@ -521,21 +523,21 @@ class SectionAdmin(admin.ModelAdmin):
     def related_content_view(self, request, section_id, list_per_page=10):
         """
         This view shows all content associated with a particular section. The
-        edit view also shows this info, but this view is for people who may not 
-        have permissions to edit sections but still need to see all content 
+        edit view also shows this info, but this view is for people who may not
+        have permissions to edit sections but still need to see all content
         associated with a particular Section.
         """
         model = self.model
-        
+
         try:
             obj = self.queryset(request).get(pk=unquote(section_id))
         except model.DoesNotExist:
             # Don't raise Http404 just yet, because we haven't checked
             # permissions. We don't want an unauthenticated user to be able
-            # to determine whether a given object exists.        
+            # to determine whether a given object exists.
             obj = None
         if not self.has_view_permission(request):
-            raise PermissionDenied        
+            raise PermissionDenied
         content_table = _get_content_table(obj)
         sort = request.GET.get('sort')
         sort_map = {
@@ -545,7 +547,7 @@ class SectionAdmin(admin.ModelAdmin):
         }
         if sort and sort in sort_map.keys():
             content_table = sorted(
-                content_table, 
+                content_table,
                 key=operator.itemgetter(sort_map[sort])
             )
         paginated_content = Paginator(content_table, list_per_page)
@@ -574,26 +576,26 @@ class SectionAdmin(admin.ModelAdmin):
     @transaction.commit_on_success
     def order_content_view(self, request, object_id):
         """
-        This view shows all content associated with a particular section 
-        including subsections, but unlike related_content, this view allows 
+        This view shows all content associated with a particular section
+        including subsections, but unlike related_content, this view allows
         users to set the order of a particular section.
         """
         model = self.model
         opts = model._meta
-        
+
         try:
             obj = self.queryset(request).get(pk=unquote(object_id))
         except model.DoesNotExist:
             # Don't raise Http404 just yet, because we haven't checked
             # permissions. We don't want an unauthenticated user to be able
-            # to determine whether a given object exists.        
+            # to determine whether a given object exists.
             obj = None
         if not self.has_change_permission(request, obj):
             raise PermissionDenied
         if obj is None:
             raise Http404(_(
                 '%(name)s object with primary key %(key)r does not exist.') % {
-                    'name': force_unicode(opts.verbose_name), 
+                    'name': force_unicode(opts.verbose_name),
                     'key': escape(object_id)
             })
         if not app_settings.ALLOW_ASSOCIATED_ORDERING:
@@ -613,11 +615,11 @@ class SectionAdmin(admin.ModelAdmin):
                     ))
             # Log that a section has been successfully edited.
             self.log_change(
-                request, 
-                obj, 
+                request,
+                obj,
                 "Content for %s reordered ." % obj.title
             )
-            # Redirect to sections index page.     
+            # Redirect to sections index page.
             return self.redirect_to_scaffold_index(request)
         context = {
             'obj': obj,
@@ -627,7 +629,7 @@ class SectionAdmin(admin.ModelAdmin):
         return self.render_scaffold_page(request, "order_all_content.html",
             context
         )
-    
+
     def prep_m2m(self, kwargs):
         """
         Any kwargs which correspond to M2M fields on the model cannot be
@@ -641,15 +643,15 @@ class SectionAdmin(admin.ModelAdmin):
                 m2m_objects = kwargs.pop(field.name)
                 m2m_rels[field.name] = m2m_objects
         return kwargs, m2m_rels
-    
+
     def validate_and_create_object(self, parent, kwargs):
         """
-        Based on the `VALIDATE_GLOBALLY_UNIQUE_SLUGS` setting, ensures that no 
-        other children with the slug exist *or* ensures that no other children 
-        at that level with the same slug exist. If that requirement is 
+        Based on the `VALIDATE_GLOBALLY_UNIQUE_SLUGS` setting, ensures that no
+        other children with the slug exist *or* ensures that no other children
+        at that level with the same slug exist. If that requirement is
         satisfied, creates and returns the object. Otherwise, a ValidationError
         is raised.
-        
+
         This task, sadly, cannot be handled through traditional model or form
         validators because the model's save method is wrapped up in treebeard
         code.
@@ -674,7 +676,7 @@ class SectionAdmin(admin.ModelAdmin):
                 raise ValidationError, (
                     "A %s with the slug '%s' already exists"
                 ) % (verbose_name, slug)
-        # Validation if slugs do not have to be globally unique.        
+        # Validation if slugs do not have to be globally unique.
         else:
             if parent:
                 if slug in [obj.slug for obj in parent.get_children()]:
@@ -711,14 +713,14 @@ class SectionAdmin(admin.ModelAdmin):
 def _get_content_table(obj, sort_key=None):
     """
     Returns list of tuples containing:
-    
+
     * the related object
     * its date (from get_latest_by prop, if it's set)
     * the application the object belongs to
     * the model the object belongs to
-    * The type of relationship 
+    * The type of relationship
     * the URL in the admin that will allow you to edit the object
-    
+
     """
     related_content = obj.get_associated_content(sort_key=sort_key)
     content_table = []
@@ -733,20 +735,20 @@ def _get_content_table(obj, sort_key=None):
         else:
             date = None
         content_table.append((
-             item, 
-             date, 
-             app, 
-             model, 
-             relationship_type, 
+             item,
+             date,
+             app,
+             model,
+             relationship_type,
              edit_url
         ))
     return content_table
 
 def _get_user_link_html(request):
     """
-    Checks available user permissions to make sure that the rendered changelist 
-    page does not offer the user options which they don't have permissions for 
-    (avoids having a PermissionDenied exception get raised). 
+    Checks available user permissions to make sure that the rendered changelist
+    page does not offer the user options which they don't have permissions for
+    (avoids having a PermissionDenied exception get raised).
     """
     link_html = copy(app_settings.LINK_HTML)
     app_label = model_proxy._meta.app_label
