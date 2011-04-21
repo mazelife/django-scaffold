@@ -68,7 +68,7 @@ def lookup_section(lookup_from):
         # Strips leading and trailing slashes
         path = lookup_from.path.strip("/")
         path_matches = [p for p in section_paths if path.startswith(p)]
-        if len(path_matches) >= 1:
+        if len(path_matches) >= 1 and path_map.has_key(path):
             if app_settings.VALIDATE_GLOBALLY_UNIQUE_SLUGS:
                 # If slugs have to be globally unique, we can shortcut to a 
                 # more efficient query.
