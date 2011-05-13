@@ -286,8 +286,8 @@ class SectionAdmin(admin.ModelAdmin):
                         )
                         formsets.append(formset)
                     if all_valid(formsets) and form_validated:
-                        # The object validated and saved, the inlines appear to be
-                        # valid, now we will save them one by one:
+                        # The object validated and saved, the inlines appear to
+                        # be valid, now we will save them one by one:
                         try:
                             for formset in formsets:
                                 self.save_formset(request, form, formset,
@@ -297,7 +297,9 @@ class SectionAdmin(admin.ModelAdmin):
                             raise ValidationError, e
                         if form_validated and request.POST.get('position') \
                             and request.POST.get('child'):
-                            rel_to = model.objects.get(pk=request.POST.get('child'))
+                            rel_to = model.objects.get(
+                                pk=request.POST.get('child')
+                            )
                             rel = request.POST.get('position')
                             pos_map = {
                                 'before': 'left',
@@ -312,7 +314,8 @@ class SectionAdmin(admin.ModelAdmin):
                             try:
                                 new_object.move(rel_to, pos_map[rel])
                             except Exception, e:
-                                raise ValidationError, "Unable to move: %s" % str(e)
+                                e = str(e)
+                                raise ValidationError, "Unable to move: %s" % e
 
                         self.log_addition(request, new_object)
                         transaction.commit()
@@ -509,6 +512,9 @@ class SectionAdmin(admin.ModelAdmin):
     @transaction.commit_on_success
     def change_view(self, request, object_id, extra_context=None):
         obj = self.get_object(request, unquote(object_id))
+        if not obj:
+            model_name = self.model._meta.module_name.title()
+            raise Http404, "%s not found." % model_name
         rel_sort_key = allow_associated_ordering and 'order' or None
         context = {
             'allow_associated_ordering': allow_associated_ordering,
