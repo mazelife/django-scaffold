@@ -3,10 +3,10 @@
 import os
 from distutils.core import setup
 
-version = '0.4'
+version = '1.0'
 
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: BSD License",
     "Programming Language :: Python",
@@ -34,9 +34,9 @@ setup(
     package_data={'scaffold': ['templates/admin/*.html']},
     description=(
         'Reusable application for a generic section/subsection hierarchy'
-        ' in Django 1.0+'
+        ' in Django 1.3'
     ),
     classifiers=classifiers,
     long_description=long_desc,
-    install_requires=['django>=1.1.1','django-treebeard>=1.60']
+    install_requires=['django>=1.3','django-treebeard>=1.61']
 )
