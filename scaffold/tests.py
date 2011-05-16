@@ -175,8 +175,9 @@ class SectionTest(TestCase):
     
     def test_section_view(self):
         """
-        Make sure the default section view returns 200 and contains
-        the section in the template context.
+        Make sure the default section view returns 200 (unfortunately, we
+        can't verify the section is in the view context because we don't know
+        what the context name will be).
         """
         TestSection.load_bulk(BASE_DATA)
         self._patch_get_extending_model()
@@ -184,7 +185,6 @@ class SectionTest(TestCase):
         url = obj.get_absolute_url()
         result = self.client.get(url)
         self.assertEqual(result.status_code, 200)
-        self.assertEqual(result.context['section'].pk, obj.pk)
         
     def test_admin_index(self):
         """
@@ -232,21 +232,21 @@ class SectionTest(TestCase):
         except TestSection.DoesNotExist:
             pass
         # Create a new section properly via the form and verify it exists.
+        child_section = TestSection.objects.get(title="2")
         response = self.client.post(admin_urls['create'], {
             'slug': 'foobar',
             'title': 'Foo Bar',
             'description': 'Foo Bar description',
             'position': 'after',
-            'child': '4'
+            'child': str(child_section.pk)
         })
         # On sucess should redirect.
         self.assertRedirects(response, admin_urls['index'])
         # Verify new section exists and is child of the "2" section...
         self.assertTrue(len(TestSection.objects.filter(title="Foo Bar")) == 1)
         foobar = TestSection.objects.get(slug="foobar")
-        self.assertEqual(foobar.get_parent(), test_section)
-        # ...and make sure it was positioned correctly.
-        self.assertEqual(test_section.get_children()[2].pk, foobar.pk)        
+        self.assertTrue(foobar.is_root())
+        self.assertEqual(child_section.get_next_sibling(), foobar)
         # Now move the section...
         admin_urls = self.get_admin_urls(foobar)
         response = self.client.get(admin_urls['move'])
