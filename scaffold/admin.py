@@ -297,9 +297,12 @@ class SectionAdmin(admin.ModelAdmin):
                             raise ValidationError, e
                         if form_validated and request.POST.get('position') \
                             and request.POST.get('child'):
-                            rel_to = model.objects.get(
-                                pk=request.POST.get('child')
-                            )
+                            try:
+                                rel_to = model.objects.get(
+                                    pk=request.POST.get('child')
+                                )
+                            except model.DoesNotExist, e:
+                                raise ValidationError, e
                             rel = request.POST.get('position')
                             pos_map = {
                                 'before': 'left',
