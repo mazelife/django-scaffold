@@ -1,3 +1,6 @@
+include LICENSE
 include README.rst
-recursive-include scaffold/media *
+recursive-include scaffold/static *
 recursive-include scaffold/templates *
+
+recursive-include threespot *.css *.png *.jpg *.js *.gif *.html
