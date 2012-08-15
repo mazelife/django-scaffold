@@ -1,8 +1,8 @@
 {% extends "admin/change_form.html" %}
-{% load i18n %}
+{% load i18n static %}
 {% block extrastyle %}
     {{ block.super }}
-    <link rel="stylesheet" href="{{MEDIA_URL}}scaffold/styles/scaffold-admin.css" type="text/css" media="screen"/>
+    <link rel="stylesheet" href="{% static 'scaffold/styles/scaffold-admin.css' %}" type="text/css" media="screen"/>
     <style type="text/css" media="screen">
     label, input { display: inline; }
     label { padding-right: 10px;}
