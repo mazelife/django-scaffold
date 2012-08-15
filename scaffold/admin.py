@@ -270,8 +270,9 @@ class SectionAdmin(admin.ModelAdmin):
                         form_validated = False
                         new_object = self.model()
                     prefixes = {}
+                    inline_instances = self.get_inline_instances(request)
                     for FormSet, inline in\
-                        zip(self.get_formsets(request), self.inline_instances):
+                        zip(self.get_formsets(request), inline_instances):
                         prefix = FormSet.get_default_prefix()
                         prefixes[prefix] = prefixes.get(prefix, 0) + 1
                         if prefixes[prefix] != 1:
@@ -348,8 +349,8 @@ class SectionAdmin(admin.ModelAdmin):
                     initial[k] = initial[k].split(",")
             form = ModelForm(initial=initial)
             prefixes = {}
-            for FormSet, inline in zip(self.get_formsets(request),
-                                       self.inline_instances):
+            inline_instances = self.get_inline_instances(request)
+            for FormSet, inline in zip(self.get_formsets(request), inline_instances):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
                 if prefixes[prefix] != 1:
@@ -364,7 +365,8 @@ class SectionAdmin(admin.ModelAdmin):
         media = self.media + adminForm.media
 
         inline_admin_formsets = []
-        for inline, formset in zip(self.inline_instances, formsets):
+        inline_instances = self.get_inline_instances(request)
+        for inline, formset in zip(inline_instances, formsets):
             fieldsets = list(inline.get_fieldsets(request))
             readonly = list(inline.get_readonly_fields(request))
             inline_admin_formset = helpers.InlineAdminFormSet(inline, formset,
@@ -382,7 +384,6 @@ class SectionAdmin(admin.ModelAdmin):
             'media': mark_safe(media),
             'inline_admin_formsets': inline_admin_formsets,
             'errors': helpers.AdminErrorList(form, formsets),
-            'root_path': self.admin_site.root_path,
             'app_label': opts.app_label,
         }
         context.update(extra_context or {})
