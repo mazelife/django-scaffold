@@ -38,7 +38,7 @@ setup(
     author='James Stevenson',
     author_email='james.m.stevenson at gmail dot com',
     license='BSD License',
-    packages=['scaffold'],
+    packages=['scaffold', 'scaffold.templatetags'],
     package_dir={'scaffold': 'scaffold'},
     package_data={'scaffold': [
         'templates/scaffold/*.html',
