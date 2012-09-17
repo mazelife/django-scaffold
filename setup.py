@@ -3,7 +3,7 @@
 import os
 from distutils.core import setup
 
-version = '1.1.1'
+version = '1.1.2'
 
 classifiers = [
     "Development Status :: 5 - Production/Stable",
