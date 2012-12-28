@@ -44,13 +44,13 @@
 </div>
 </form></div>
 {%block related_content%}
-    <h2>Items Belonging to this {{model_label}}:</h2>
+    <h2>{% trans "Items Belonging to this" %} {{model_label}}:</h2>
     <table class="related-content">
     <thead>
         <tr>
-            <th{%ifequal sort "name"%} class="active"{%endifequal%}>Title</th>
-            <th{%ifequal sort "date"%} class="active"{%endifequal%}>Date</th>
-            <th{%ifequal sort "content"%} class="active"{%endifequal%} colspan="2">Content Type</th>        
+            <th{%ifequal sort "name"%} class="active"{%endifequal%}>{% trans "Title" %}</th>
+            <th{%ifequal sort "date"%} class="active"{%endifequal%}>{% trans "Date" %}</th>
+            <th{%ifequal sort "content"%} class="active"{%endifequal%} colspan="2">{% trans "Content Type" %}</th>        
         </tr>
     </thead>
     <tbody>
@@ -64,7 +64,7 @@
             <td><a class="changelink" href="{{edit_url}}">Edit</a></td>
         </tr>
     {%empty%}
-        <tr><td colspan="3">No objects assigned to the {{model_label}}.</td></tr>
+        <tr><td colspan="3">{% trans "No objects assigned to the" %} {{model_label}}.</td></tr>
     {%endfor%}
     </tbody>
     </table>
