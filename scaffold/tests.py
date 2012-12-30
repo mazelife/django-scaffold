@@ -19,14 +19,14 @@ Current test coverage
 
 A listing of code coverage by module.
 
-Name                             Stmts   Exec  Cover 
+Name                             Stmts   Exec  Cover
 -----------------------------------------------------
-scaffold.admin                     375    258    68%   
-scaffold.forms                       8      7    87%   
-scaffold.middleware                 51     35    68%   
-scaffold.models                     87     82    94%   
-scaffold.templatetags.sections      65     58    89%   
-scaffold.views                      19      9    47%   
+scaffold.admin                     375    258    68%
+scaffold.forms                       8      7    87%
+scaffold.middleware                 51     35    68%
+scaffold.models                     87     82    94%
+scaffold.templatetags.sections      65     58    89%
+scaffold.views                      19      9    47%
 -----------------------------------------------------
 TOTAL                              605    449    74%
 """
@@ -36,7 +36,7 @@ try:
     HAS_DJANGO_AUTH = True
 except ImproperlyConfigured:
     HAS_DJANGO_AUTH = False
-    
+
 BASE_DATA = [
   {'data':{'slug': '1', 'title': '1', 'description':'1'}},
   {'data':{'slug': '2', 'title': '2', 'description':'2'}, 'children':[
@@ -57,6 +57,7 @@ class TestSection(BaseSection):
     """ A model of a mock section object"""
     description = models.CharField(max_length=255, blank=True)
 
+
 from admin import SectionAdmin
 admin.site.register(TestSection, SectionAdmin)
 
@@ -72,7 +73,7 @@ class BaseSortedTestArticle(models.Model):
     """A mock object with an FK relationship to a section"""
     title = models.CharField(max_length=255)
     section = models.ForeignKey(TestSection)
-    
+
     class Meta:
         ordering = ['title']
         abstract = True
@@ -90,8 +91,8 @@ class SectionTest(TestCase):
 
     csrf_disabled = False
     test_user = 'testrunner'
-    test_password = 'testrunner'    
-    
+    test_password = 'testrunner'
+
     def _patch_get_extending_model(self):
         # A little patching to make sure that get_extending_model() returns
         # TestSection.
@@ -100,14 +101,14 @@ class SectionTest(TestCase):
             return TestSection
         app_settings.get_extending_model = get_test_model
         from middleware import _build_section_path_map
-        _build_section_path_map()   
-    
+        _build_section_path_map()
+
     def _disable_csrf_middleware(self):
         settings.MIDDLEWARE_CLASSES = filter(lambda m: 'CsrfMiddleware' \
             not in m, settings.MIDDLEWARE_CLASSES
         )
         self.csrf_disabled = True
-    
+
     def _setup_admin(self):
         """Check to see if test runner user was already created (perhaps by
         another test case) and if not, create it.
@@ -127,7 +128,7 @@ class SectionTest(TestCase):
         )
         from urls import urlpatterns
         urlpatterns = admin_patterns + urlpatterns
-    
+
     def _log_test_client_in(self, login_url=None):
         """Log the test client in using the test runner user"""
         self._setup_admin()
@@ -135,14 +136,14 @@ class SectionTest(TestCase):
             from django.conf.global_settings import LOGIN_URL as login_url
         login_url = "/admin/login/"
         return self.client.login(
-            username=self.test_user, 
+            username=self.test_user,
             password=self.test_password
         )
-        
+
     def _log_test_client_out(self):
-        """Log the test client out using the test runner user"""    
+        """Log the test client out using the test runner user"""
         self.client.logout()
-            
+
     @property
     def admin_index_url(self):
         self._patch_get_extending_model()
@@ -150,7 +151,7 @@ class SectionTest(TestCase):
         return reverse(
             'admin:%s_%s_changelist' % (opts.app_label, opts.module_name)
         )
-    
+
     def get_admin_urls(self, obj):
         self._patch_get_extending_model()
         opts = app_settings.get_extending_model()._meta
@@ -162,33 +163,20 @@ class SectionTest(TestCase):
             urls[view] = reverse(prefix + view, args=(arg,))
         urls['index'] = self.admin_index_url
         return urls
-        
+
     def login_and_load(self):
         """Log client in and load sections data."""
-        import settings
+        #import settings
         if not self.csrf_disabled:
             self._disable_csrf_middleware()
         self._log_test_client_in()
-        TestSection.load_bulk(BASE_DATA)            
+        TestSection.load_bulk(BASE_DATA)
         import admin
         admin.model_proxy = TestSection # Monkey patch!
-    
-    def test_section_view(self):
-        """
-        Make sure the default section view returns 200 (unfortunately, we
-        can't verify the section is in the view context because we don't know
-        what the context name will be).
-        """
-        TestSection.load_bulk(BASE_DATA)
-        self._patch_get_extending_model()
-        obj = TestSection.objects.get(slug='231')
-        url = obj.get_absolute_url()
-        result = self.client.get(url)
-        self.assertEqual(result.status_code, 200)
-        
+
     def test_admin_index(self):
         """
-        Verify that each section in the section tree can be found on the admin 
+        Verify that each section in the section tree can be found on the admin
         index page and that it's title is present."""
         self.login_and_load()
         sections = TestSection.objects.all()
@@ -198,8 +186,8 @@ class SectionTest(TestCase):
 
     def test_admin_section_create_move(self):
         """
-        Via the admin interface, create a new section in the the tree under 
-        the "2" section and then move it to the "4" section as the last child. 
+        Via the admin interface, create a new section in the the tree under
+        the "2" section and then move it to the "4" section as the last child.
         """
         # Try creating a root-level node.
         self.login_and_load()
@@ -213,7 +201,7 @@ class SectionTest(TestCase):
         self.assertTrue('bazz' in \
             [node.slug for node in TestSection.get_root_nodes()]
         )
-        # Try creating a node that is a child         
+        # Try creating a node that is a child
         test_section = TestSection.objects.get(slug="2")
         admin_urls = self.get_admin_urls(test_section)
         response = self.client.get(admin_urls['create'])
@@ -253,13 +241,13 @@ class SectionTest(TestCase):
         self.assertEqual(response.context['obj'].pk, foobar.pk)
         # ... first with an incorrect reltionship field...
         response = self.client.post(admin_urls['move'], {
-            'relationship': 'sibling', 
+            'relationship': 'sibling',
             'to': TestSection.objects.get(slug="4").id
         })
         self.assertEqual(response.status_code, 400)
         # ... then a correct one.
         response = self.client.post(admin_urls['move'], {
-            'relationship': 'child', 
+            'relationship': 'child',
             'to': TestSection.objects.get(slug="4").id
         })
         # On sucess should redirect to index.
@@ -271,13 +259,13 @@ class SectionTest(TestCase):
         )
         # Try moving a section to itself.
         response = self.client.post(admin_urls['move'], {
-            'relationship': 'child', 
+            'relationship': 'child',
             'to': foobar.id
         })
         self.assertEqual(response.status_code, 400)
         # Move section to root of tree.
         response = self.client.post(admin_urls['move'], {
-            'relationship': 'neighbor', 
+            'relationship': 'neighbor',
             'to': 'TOP'
         })
         self.assertEqual(
@@ -286,9 +274,9 @@ class SectionTest(TestCase):
         )
         # Move it one more time.
         response = self.client.post(admin_urls['move'], {
-            'relationship': 'neighbor', 
+            'relationship': 'neighbor',
             'to': TestSection.objects.get(slug="231").id
-        })        
+        })
         self.assertRedirects(response, admin_urls['index'])
         # Verify section moved where it was supposed to.
         self.assertEqual(
@@ -298,7 +286,7 @@ class SectionTest(TestCase):
 
     def test_admin_validation(self):
         """
-        Make sure we can't create two sections with the same slug under one 
+        Make sure we can't create two sections with the same slug under one
         parent.
         """
         #FIXME: Write a test.
@@ -311,10 +299,10 @@ class SectionTest(TestCase):
         })
         err = response.context['adminform'].form.errors['slug'][0]
         self.assertEqual(
-            u"The test section '2' already has a child with the slug '22.'",
+            u"Test section with this Slug already exists.",
             err
         )
-    
+
     def test_admin_section_remove(self):
         """Delete a section via the admin interface."""
         self.login_and_load()
@@ -337,19 +325,19 @@ class SectionTest(TestCase):
         test_section = TestSection.objects.get(slug="41")
         admin_urls = self.get_admin_urls(test_section)
         response = self.client.get(admin_urls['change'])
-        self.assertEqual(response.context['original'].slug, test_section.slug)      
+        self.assertEqual(response.context['original'].slug, test_section.slug)
         response = self.client.post(admin_urls['change'], {
             'slug': '41b',
             'title': 'Forty One B',
             'description': 'Description tktk.'
         })
         # Verify edit operation redirects to index.
-        self.assertRedirects(response, admin_urls['index']) 
+        self.assertRedirects(response, admin_urls['index'])
         # New data is there:
         edited_section = TestSection.objects.get(slug="41b")
         self.assertTrue(edited_section.title == 'Forty One B')
         self.assertTrue(edited_section.description == 'Description tktk.')
-    
+
     def test_admin_section_related(self):
         """View related content via the admin interface."""
         self.login_and_load()
@@ -358,19 +346,19 @@ class SectionTest(TestCase):
         response = self.client.get(admin_urls['related'])
         self.assertTrue(response.status_code == 200)
         #FIXME: this could use better tests.
-    
+
     def test_admin_section_order_all_content(self):
         """View related content via the admin interface."""
         self.login_and_load()
         test_section = TestSection.objects.get(slug="41")
         admin_urls = self.get_admin_urls(test_section)
-        response = self.client.get(admin_urls['order'])
+        response = self.client.get(admin_urls['related'])
         self.assertTrue(response.status_code == 200)
         #FIXME: this could use better tests.
-    
+
     def test_model_get_related_content(self):
         """Test the BaseSection model's get_related_content method"""
-        TestSection.load_bulk(BASE_DATA)  
+        TestSection.load_bulk(BASE_DATA)
         section = TestSection.objects.get(slug='2')
         article = TestArticle(title='B Test Article', section=section)
         article.save()
@@ -384,7 +372,7 @@ class SectionTest(TestCase):
         for title in ['A Test Article', 'Z Test Article']:
             article = TestArticle(title=title, section=section)
             article.save()
-        content = section.get_related_content(sort_fields=['title'])        
+        content = section.get_related_content(sort_fields=['title'])
         self.assertEqual(
             [item[0].title for item in content],
             [u'A Test Article', u'B Test Article', u'Z Test Article']
@@ -399,21 +387,21 @@ class SectionTest(TestCase):
         for title in ['A', 'D', 'Z']:
             article = OtherSortedTestArticle(title=title, section=section)
             article.save()
-        # Verify that get_related_content shuffles content together in alpha    
+        # Verify that get_related_content shuffles content together in alpha
         # order.
         content = section.get_related_content(infer_sort=True)
         self.assertEqual(
              [item[0].title for item in content],
              [u'A', u'C', u'D', u'J', u'Y', u'Z']
          )
-    
+
     def test_model_get_associated_content(self):
         """Test the BaseSection model's get_associated_content method"""
-        TestSection.load_bulk(BASE_DATA)  
+        TestSection.load_bulk(BASE_DATA)
         section = TestSection.objects.get(slug='2')
         article = TestArticle(title='1 Test Article', section=section)
         article.save()
-        content = section.get_associated_content()  
+        content = section.get_associated_content()
         self.assertTrue(len(content) == 5)
         child_sections = [s for s in content if s[3] == 'subsection']
         self.assertEqual(len(section.get_children()), len(child_sections))
@@ -432,16 +420,16 @@ class SectionTest(TestCase):
             [c[0].title for c in content],
             [u'1 Test Article', u'21', u'22', u'23', u'24']
         )
-    
+
     def test_model_get_subsections(self):
         """Test the BaseSection model's get_subsections method"""
         TestSection.load_bulk(BASE_DATA)
         section = TestSection.objects.get(slug='2')
         for sub_section in section.get_subsections():
             self.assertTrue(sub_section.slug in ['21','22','23','24'])
-    
+
     def test_model_get_first_populated_field(self):
-        """Test the BaseSection model's get_first_populated_field method"""        
+        """Test the BaseSection model's get_first_populated_field method"""
         TestSection.load_bulk(BASE_DATA)
         section = TestSection.objects.get(slug='24')
         self.assertEqual(
@@ -455,7 +443,7 @@ class SectionTest(TestCase):
         )
 
     def test_templatetag_get_root_sections(self):
-        """Test that the get_root_sections template tag works as expected."""        
+        """Test that the get_root_sections template tag works as expected."""
         TestSection.load_bulk(BASE_DATA)
         self._patch_get_extending_model()
         # Test basic version of template tag.
@@ -463,7 +451,7 @@ class SectionTest(TestCase):
         <ul>{% get_root_sections as root_sections %}
         {{root_sections|pprint}}
         {%for nav in root_sections%}<li>{{nav.title}}</li>{%endfor%}
-        </ul>    
+        </ul>
         """)
         context = Context({})
         result = template.render(context)
@@ -476,42 +464,42 @@ class SectionTest(TestCase):
         {%for nav in root_sections%}
             <li{%if nav.is_active%} class="active"{%endif%}>{{nav.title}}</li>
         {%endfor%}
-        </ul>    
+        </ul>
         """)
         context = Context({'subsection': TestSection.objects.get(slug='231')})
         result = template.render(context)
         for root in TestSection.get_root_nodes():
             self.assertTrue(root.title in result)
         self.assertTrue('<li class="active">2</li>' in result)
-    
+
     def test_templatetag_section_is_descendant(self):
         """
-        Test that the section_is_descendant template tag works as 
+        Test that the section_is_descendant template tag works as
         expected.
-        """        
+        """
         TestSection.load_bulk(BASE_DATA)
         template = Template("""{%load sections%}
         {% section_is_descendant subsection of rootsection as descends %}
         {% if descends%}Passes Test 1{%endif%}
         {% section_is_descendant orphan of rootsection as descends %}
-        {% if descends%}{%else%}Passes Test 2{%endif%}            
+        {% if descends%}{%else%}Passes Test 2{%endif%}
         """)
         context = Context({
             'subsection': TestSection.objects.get(slug='231'),
             'orphan': TestSection.objects.get(slug='1'),
             'rootsection': TestSection.objects.get(slug='2'),
         })
-        
+
         result = template.render(context)
         self.assertTrue('Passes Test 1' in result)
         self.assertTrue('Passes Test 2' in result)
-        
+
         # Render with a bad context:
         context = Context({
             'subsection': None,
             'orphan': None,
             'rootsection': None,
-        })        
+        })
         result = template.render(context)
         self.assertTrue('Passes Test 1' not in result)
         self.assertTrue('Passes Test 2' in result)
