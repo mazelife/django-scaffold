@@ -1,0 +1,132 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-12-28 16:13-0600\n"
+"PO-Revision-Date: 2012-12-28 16:13\n"
+"Last-Translator:   <helmygb@gmail.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"X-Translated-Using: django-rosetta 0.6.8\n"
+
+#: admin.py:380
+#, python-format
+msgid "Add %s"
+msgstr "Agregar %s"
+
+#: admin.py:445 admin.py:607
+#, python-format
+msgid "%(name)s object with primary key %(key)r does not exist."
+msgstr "%(name)s objeto con llave primeria %(key)r no existe."
+
+#: models.py:18 templates/scaffold/admin/change_form.html:51
+msgid "Title"
+msgstr "Título"
+
+#: models.py:19
+msgid "Slug"
+msgstr "Slug"
+
+#: models.py:20
+msgid "Used to construct URL"
+msgstr "Usado para construir la URL"
+
+#: models.py:23
+msgid "Order of section"
+msgstr "Orden de sección"
+
+#: templates/scaffold/admin/add.html:10
+#: templates/scaffold/admin/change_form.html:5
+#: templates/scaffold/admin/delete.html:15
+#: templates/scaffold/admin/index.html:16
+#: templates/scaffold/admin/move.html:13
+#: templates/scaffold/admin/order_all_content.html:13
+#: templates/scaffold/admin/related_content.html:13
+msgid "Home"
+msgstr "Inicio"
+
+#: templates/scaffold/admin/add.html:13
+msgid "Add"
+msgstr "Agregar"
+
+#: templates/scaffold/admin/add.html:19
+msgid "Belonging to the"
+msgstr "Perteneciente a"
+
+#: templates/scaffold/admin/add.html:26
+#: templates/scaffold/admin/change_form.html:19
+msgid "Please correct the error below."
+msgid_plural "Please correct the errors below."
+msgstr[0] "Por favor corrija los siguientes errores."
+msgstr[1] "Por favor corrija el siguiente error."
+
+#: templates/scaffold/admin/change_form.html:47
+msgid "Items Belonging to this"
+msgstr "Items Pertenecientes a"
+
+#: templates/scaffold/admin/change_form.html:52
+msgid "Date"
+msgstr "Fecha"
+
+#: templates/scaffold/admin/change_form.html:53
+msgid "Content Type"
+msgstr "Tipo de contenido"
+
+#: templates/scaffold/admin/change_form.html:67
+msgid "No objects assigned to the"
+msgstr "No hay objetos asignados a este(a)"
+
+#: templates/scaffold/admin/delete.html:19
+#: templates/scaffold/admin/submit_line.html:3
+msgid "Delete"
+msgstr "Eliminar"
+
+#: templates/scaffold/admin/index.html:25
+msgid "Add a top-level"
+msgstr "Agregar de primer nivel"
+
+#: templates/scaffold/admin/move.html:17
+msgid "Move"
+msgstr "Mover"
+
+#: templates/scaffold/admin/order_all_content.html:17
+msgid "Order content"
+msgstr "Ordenar contenido"
+
+#: templates/scaffold/admin/related_content.html:17
+msgid "Related content"
+msgstr "Contenido relacionado"
+
+#: templates/scaffold/admin/submit_line.html:4
+msgid "Move this"
+msgstr "Mover este"
+
+#: templates/scaffold/admin/submit_line.html:5
+msgid "Order content of"
+msgstr "Ordenar contenido de"
+
+#: templates/scaffold/admin/submit_line.html:6
+msgid "Save"
+msgstr "Guardar"
+
+#: templates/scaffold/admin/submit_line.html:7
+msgid "Save as new"
+msgstr "Guardar como nuevo"
+
+#: templates/scaffold/admin/submit_line.html:8
+msgid "Save and add another"
+msgstr "Guardar y agregar otro"
+
+#: templates/scaffold/admin/submit_line.html:9
+msgid "Save and continue editing"
+msgstr "Guardar y continuar editando"
