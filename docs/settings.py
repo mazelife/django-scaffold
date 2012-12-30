@@ -1,5 +1,5 @@
-# Django settings for docs project.
-# import source code dir
+# A very basic settings file that allows Sphinx to build
+# the docs (this is becuase autodoc is used).
 import os
 import sys
 sys.path.insert(0, os.getcwd())
