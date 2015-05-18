@@ -362,7 +362,7 @@ class SectionAdmin(admin.ModelAdmin):
             fieldsets = list(inline.get_fieldsets(request))
             readonly = list(inline.get_readonly_fields(request))
             inline_admin_formset = helpers.InlineAdminFormSet(inline, formset,
-                fieldsets, readonly, model_admin=self)
+                fieldsets, readonly_fields=readonly, model_admin=self)
             inline_admin_formsets.append(inline_admin_formset)
             media = media + inline_admin_formset.media
 
