@@ -2,7 +2,8 @@ from django.core.exceptions import MiddlewareNotUsed, ImproperlyConfigured
 from django.contrib.flatpages.views import flatpage
 from django.db.models.loading import AppCache
 from django.http import Http404
-from django.views.generic import simple
+from django.shortcuts import render_to_response
+from django.template import RequestContext
 
 from middleware import get_current_section, lookup_section
 import app_settings 
@@ -19,10 +20,7 @@ def section(request, section_path=None, id_override=None):
         lookup_from = id_override or request
         section = lookup_section(lookup_from)
     if section:
-        return simple.direct_to_template(request, 
-            template = "scaffold/section.html",
-            extra_context = {'section': section}
-        )        
+        return render_to_response("scaffold/section.html", {'section': section}, context_instance=RequestContext(request))
     else:
         app_cache = AppCache()
         try:

@@ -13,14 +13,14 @@ from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db import models, transaction
 from django.forms.formsets import all_valid
 from django.http import HttpResponseBadRequest, HttpResponseServerError, Http404
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect, render_to_response
+from django.template import RequestContext
 from django.utils.encoding import force_unicode
 from django.forms.util import ErrorList
 from django.utils.functional import update_wrapper
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
-from django.views.generic import simple
 
 from forms import SectionForm
 import app_settings
@@ -30,6 +30,7 @@ allow_associated_ordering = app_settings.ALLOW_ASSOCIATED_ORDERING
 model_proxy = app_settings.get_extending_model()
 
 csrf_protect_m = admin.options.csrf_protect_m
+
 
 class SectionAdmin(admin.ModelAdmin):
 
@@ -107,10 +108,7 @@ class SectionAdmin(admin.ModelAdmin):
         """
         context.update(self.app_context)
         template_path = self.template_base + template
-        return simple.direct_to_template(request,
-            template = template_path,
-            extra_context = context
-        )
+        return render_to_response(template_path, context, context_instance=RequestContext(request))
 
     def redirect_to_scaffold_index(self, request):
         """Redirect to the change list page of your model."""
@@ -118,10 +116,7 @@ class SectionAdmin(admin.ModelAdmin):
             'admin:%(app_label)s_%(module_label)s_changelist'
             % self.app_context
         )
-        return simple.redirect_to(request,
-            url=redirect_url,
-            permanent=False
-        )
+        return redirect(redirect_url, permanent=False)
 
     def redirect_to_object_changeform(self, request, obj):
         """Redirect to the change form of the given object."""
@@ -129,10 +124,7 @@ class SectionAdmin(admin.ModelAdmin):
             'admin:%(app_label)s_%(module_label)s_change' % self.app_context,
              args=(obj.pk,)
         )
-        return simple.redirect_to(request,
-            url=redirect_url,
-            permanent=False
-        )
+        return redirect(redirect_url, permanent=False)
 
     def get_changelist_repr(self, node):
         """
