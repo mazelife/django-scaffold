@@ -1,5 +1,8 @@
 from django.conf import settings
-from django.conf.urls.defaults import include, patterns
+try:
+    from django.conf.urls import patterns, url
+except ImportError:
+    from django.conf.urls.defaults import patterns, url
 from django.contrib import admin
 from django.contrib.auth.models import User
 from django.core.exceptions import ImproperlyConfigured

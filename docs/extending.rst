@@ -45,7 +45,10 @@ Now we can create a model which adds the fields we need. In the ``models.py`` fo
 
 Change the default urls.py file for your Django project to the following::
 
-    from django.conf.urls.defaults import *
+    try:
+        from django.conf.urls import *
+    except ImportError:
+        from django.conf.urls.defaults import *
 
     from django.contrib import admin
     admin.autodiscover()
