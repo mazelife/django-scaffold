@@ -1,5 +1,6 @@
 {% extends "admin/delete_confirmation.html" %}
 {% load i18n static %}
+{% load url from future %}
 {% block extrastyle %}
     {{ block.super }}
     <link rel="stylesheet" href="{% static 'scaffold/styles/scaffold-admin.css' %}" type="text/css" media="screen"/>
@@ -12,7 +13,7 @@
 {%endblock%}
 {% block breadcrumbs %}
 <div class="breadcrumbs">
-    <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo; 
+    <a href="{%url "admin:index"%}">{% trans "Home" %}</a> &rsaquo; 
     <a href="{{app_index_url}}">{{app_label|capfirst}}</a> &rsaquo;      
     <a href="{{changelist_url}}">{{model_label_plural|capfirst}}</a> &rsaquo;
     <a href="{{changelist_url}}{{obj.pk}}/">{{obj.title}}</a> &rsaquo;
