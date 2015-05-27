@@ -1,5 +1,6 @@
 {%extends "admin/change_form.html"%}
 {%load i18n admin_modify static %}
+{% load url from future %}
 {%block extrastyle%}
     {{ block.super }}
     <link rel="stylesheet" href="{% static 'scaffold/styles/scaffold-admin.css' %}" type="text/css" media="screen"/>
@@ -7,7 +8,7 @@
 {%endblock%}
 {%block breadcrumbs%}{%if not is_popup%}
 <div class="breadcrumbs">
-    <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo; 
+    <a href="{%url "admin:index"%}">{% trans "Home" %}</a> &rsaquo; 
     <a href="{{app_index_url}}">{{app_label|capfirst|escape}}</a> &rsaquo;      
     <a href="{{changelist_url}}">{{model_label_plural|capfirst}}</a> &rsaquo;
     {%trans "Add"%} {{model_label}}
