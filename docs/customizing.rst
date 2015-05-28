@@ -13,7 +13,10 @@ By default, scaffold uses a common URL addressing scheme for sections and subsec
 
 But, let's say you want a simpler scheme, with URLs like ``"/sections/local/"`` or ``"/sections/water/"``. Heres how our URL conf file looked at the end of the last section::
 
-    from django.conf.urls.defaults import *
+    try:
+        from django.conf.urls import *
+    except ImportError:
+        from django.conf.urls.defaults import *
 
     from django.contrib import admin
     admin.autodiscover()

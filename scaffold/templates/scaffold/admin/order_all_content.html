@@ -1,8 +1,9 @@
 {% extends "admin/change_list.html" %}
-{% load i18n adminmedia static %}
+{% load i18n static %}
+{% load url from future %}
 {% block extrastyle %}
     {{ block.super }}
-    <link rel="stylesheet" type="text/css" href="{% admin_media_prefix %}css/forms.css" />
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/forms.css' %}" />
     <link rel="stylesheet" href="{% static 'scaffold/styles/scaffold-admin.css' %}" type="text/css" media="screen"/>
     <link rel="stylesheet" href="{% static 'scaffold/styles/jquery.ui.start/jquery.ui.css' %}" type="text/css">   
     <script src="{% static 'scaffold/scripts/jquery.js' %}" type="text/javascript"></script>
@@ -10,7 +11,7 @@
 {%endblock%}
 {% block breadcrumbs %}
 <div class="breadcrumbs">
-    <a href="{%url admin:index%}">{% trans "Home" %}</a> &rsaquo; 
+    <a href="{%url "admin:index"%}">{% trans "Home" %}</a> &rsaquo; 
     <a href="{{app_index_url}}">{{app_label|capfirst}}</a> &rsaquo;      
     <a href="{{changelist_url}}">{{model_label_plural|capfirst}}</a> &rsaquo;
     <a href="{{changelist_url}}{{obj.pk}}/">{{obj.title}}</a> &rsaquo;

@@ -3,7 +3,7 @@
 import os
 from distutils.core import setup
 
-version = '1.1.2'
+version = '1.1.3'
 
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -59,9 +59,9 @@ setup(
     ]},
     description=(
         'Reusable application for a generic section/subsection hierarchy'
-        ' in Django 1.3.x'
+        ' in Django 1.4.x'
     ),
     classifiers=classifiers,
     long_description=long_desc,
-    install_requires=['django>=1.3.3','django-treebeard>=1.61']
+    install_requires=['django>=1.4','django-treebeard>=1.61']
 )
